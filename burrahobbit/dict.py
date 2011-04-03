@@ -91,9 +91,6 @@ class PersistentTreeMap(object):
 
 
 class VolatileTreeMap(PersistentTreeMap):
-    _assoc = PersistentTreeMap.assoc
-    _without = PersistentTreeMap.without
-    
     def assoc(self, key, value):
         """ Update this VolatileTreeMap to contain an association between
         key and value.
@@ -112,10 +109,7 @@ class VolatileTreeMap(PersistentTreeMap):
         return self
     
     def persistent(self):
-        self.without = self._without
-        self.assoc = self._assoc
-        
-        return self
+        return PersistentTreeMap(self.root)
 
 
 def main():    

@@ -140,9 +140,6 @@ class PersistentTreeSet(object):
 
 
 class VolatileTreeSet(PersistentTreeSet):
-    _add = PersistentTreeSet.add
-    _without = PersistentTreeSet.without
-    
     def add(self, key):
         """ Update this VolatileTreeMap to contain an association between
         key and value.
@@ -161,7 +158,4 @@ class VolatileTreeSet(PersistentTreeSet):
         return self
     
     def persistent(self):
-        self.without = self._without
-        self.add = self._add
-        
-        return self
+        return PersistentTreeSet(self.root)
