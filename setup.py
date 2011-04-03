@@ -45,7 +45,7 @@ setup(
     author_email='flormayer@aim.com',
     url='https://github.com/segfaulthunter/burrahobbit',
     keywords='persistent datastructures',
-    license='LGPL',
+    license='MIT',
     zip_safe=True,
     packages=['burrahobbit', 'burrahobbit.test'],
     **extra
