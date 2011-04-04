@@ -145,10 +145,7 @@ class PersistentTreeSet(object):
         if iterable is None:
             return PersistentTreeSet()
         
-        st = VolatileTreeSet()
-        for value in iterable:
-            st.add(value)
-        return st.persistent()
+        return PersistentTreeSet.from_set(iterable)
         
     def volatile(self):
         return VolatileTreeSet(copy(self.root))
