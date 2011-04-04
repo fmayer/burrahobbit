@@ -18,16 +18,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import os
 import pytest
 
 from burrahobbit.treedict import PersistentTreeMap, VolatileTreeMap
 
+
+def random_dict(size):
+    return dict((os.urandom(20), os.urandom(25)) for _ in xrange(size))
+
+
+def test_or():
+    some = random_dict(1000)
+    some.update({'a': 'foo', 'b': 'bar', 'c': 'blub'})
+    other = random_dict(1000)
+    other = {'a': 'blub', 'c': 'blab', 'd': 'quuz'}
+    
+    df = PersistentTreeMap.from_dict(some) | PersistentTreeMap.from_dict(other)
+    some.update(other)
+    assert set(df.iteritems()) == set(some.iteritems())
+
+
 def test_fromdict():
-    mp = PersistentTreeMap.from_dict(
-        {'hello': 'world', 'spam': 'eggs'}
-    )
-    assert mp['hello'] == 'world'
-    assert mp['spam'] == 'eggs'
+    dct = random_dict(1000)
+    mp = PersistentTreeMap.from_dict(dct)
+    for key, value in dct.iteritems():
+        assert mp[key] == value
 
 
 def test_persistence():
@@ -45,10 +61,11 @@ def test_persistence():
 
 
 def test_iteration():
-    mp = PersistentTreeMap.from_dict({'a': 'hello', 'b': 'world'})
-    assert set(mp.iterkeys()) == set(mp) == set(['a', 'b'])
-    assert set(mp.itervalues()) == set(['hello', 'world'])
-    assert set(mp.iteritems()) == set([('a', 'hello'), ('b', 'world')])
+    dct = random_dict(1000)
+    mp = PersistentTreeMap.from_dict(dct)
+    assert set(mp.iterkeys()) == set(mp) == set(dct.iterkeys())
+    assert set(mp.itervalues()) == set(dct.itervalues())
+    assert set(mp.iteritems()) == set(dct.iteritems())
 
 
 def test_novaluecopy():
