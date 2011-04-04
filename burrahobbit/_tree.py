@@ -437,8 +437,7 @@ class BitMapDispatch(Node):
     def map(self, fn):
         return BitMapDispatch(
             self.bitmap,
-            [SENTINEL if elem is SENTINEL else fn(elem)
-             for elem in self.items]
+            [fn(elem) for elem in self.items]
         )
 
 
