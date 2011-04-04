@@ -216,6 +216,14 @@ def main():
     mpp = mpv.persistent()
     bar.append("test")
     assert mpp["foo"] == mpv["foo"] == bar
+    
+    mp = PersistentTreeMap()
+    bar = []
+    mp = mp.assoc("foo", bar)
+    mv = mp.volatile()
+    bar.append("test")
+    assert mp["foo"] == mv["foo"] == bar
+
 
 
 if __name__ == '__main__':
