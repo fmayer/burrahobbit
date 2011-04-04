@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from copy import deepcopy
+from copy import deepcopy, copy
 
 from burrahobbit._tree import (
     NULLNODE, GET, ASSOC, IASSOC, WITHOUT, doc, DispatchNode
@@ -87,6 +87,9 @@ class SetNode(object):
     
     def __iter__(self):
         yield self
+    
+    def __copy__(self):
+        return SetNode(self.key)
 
 
 class PersistentTreeSet(object):
@@ -135,8 +138,20 @@ class PersistentTreeSet(object):
             mp = mp.add(key)
         return mp.persistent()
     
+    @staticmethod
+    def construct(iterable=None):
+        if isinstance(iterable, PersistentTreeSet):
+            return PersistentTreeSet(copy(iterable.root))
+        if iterable is None:
+            return PersistentTreeSet()
+        
+        st = VolatileTreeSet()
+        for value in iterable:
+            st.add(value)
+        return st.persistent()
+        
     def volatile(self):
-        return VolatileTreeSet(deepcopy(self.root))
+        return VolatileTreeSet(copy(self.root))
 
 
 class VolatileTreeSet(PersistentTreeSet):

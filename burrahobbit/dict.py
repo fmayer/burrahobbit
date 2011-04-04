@@ -18,9 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from copy import deepcopy
+from copy import deepcopy, copy
 
-from burrahobbit._tree import NULLNODE
+from burrahobbit._tree import NULLNODE, SENTINEL
 from burrahobbit.set import SetNode
 
 class AssocNode(SetNode):
@@ -32,6 +32,9 @@ class AssocNode(SetNode):
     
     def __repr__(self):
         return '<AssocNode(%r, %r)>' % (self.key, self.value)
+    
+    def __copy__(self):
+        return AssocNode(self.key, self.value)
 
 
 class PersistentTreeMap(object):
@@ -87,7 +90,23 @@ class PersistentTreeMap(object):
         return mp.persistent()
     
     def volatile(self):
-        return VolatileTreeMap(deepcopy(self.root))
+        return VolatileTreeMap(copy(self.root))
+    
+    @staticmethod
+    def construct(argument=SENTINEL, **kwargs):
+        if kwargs:
+            if argument is not SENTINEL:
+                kwargs['argument'] = argument
+            return PersistentTreeMap.from_dict(kwargs)
+        
+        if argument is SENTINEL:
+            return PersistentTreeMap()
+        
+        mp = VolatileTreeMap()
+        # Let the TypeError propagate.
+        for key, value in argument:
+            mp.assoc(key, value)
+        return mp.persistent()
 
 
 class VolatileTreeMap(PersistentTreeMap):
@@ -171,22 +190,6 @@ def main():
     # This /may/ actually fail if we are unlucky, but it's a good start.
     assert len(list(iter(mp))) == 225000
     
-    s = time.time()
-    dct = dict()
-    for _ in xrange(225000):
-        one, other = os.urandom(20), os.urandom(25)
-        dct2 = copy(dct)
-        dct2[one] = other
-        try:
-            dct[one]
-        except KeyError:
-            assert True
-        else:
-            assert False
-        dct = dct2
-        assert dct[one] == other
-    print 'Builtin dict:', time.time() - s
-    
     mp4 = mp3.volatile()
     mp5 = mp4.assoc('foo', 'bar')
     assert mp4['foo'] == 'bar'
@@ -206,6 +209,13 @@ def main():
         assert True
     else:
         assert False
+    
+    bar = []
+    mpv = VolatileTreeMap()
+    mpv.assoc("foo", bar)
+    mpp = mpv.persistent()
+    bar.append("test")
+    assert mpp["foo"] == mpv["foo"] == bar
 
 
 if __name__ == '__main__':

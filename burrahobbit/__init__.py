@@ -17,3 +17,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+
+from burrahobbit.set import PersistentTreeSet as set
+from burrahobbit.dict import PersistentTreeMap as dict
+
+# Shadowing the imported names spares us from either deleting the old
+# references or defining __all__.
+dict = dict.construct
+set = set.construct

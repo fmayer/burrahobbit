@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from copy import deepcopy
+from copy import deepcopy, copy
 
 SENTINEL = object()
 
@@ -158,6 +158,9 @@ class NullNode(Node):
     
     # Likewise, there are no values and items in a NullNode.
     iteritems = itervalues = __iter__
+    
+    def __copy__(self):
+        return self
 
 # We only need one instance of a NullNode because it does not contain
 # any data.
@@ -234,6 +237,9 @@ class HashCollisionNode(Node):
         for node in self.children:
             for elem in node:
                 yield elem
+    
+    def __copy__(self):
+        return HashCollisionNode(map(copy, self.children))
 
 
 class ListDispatch(Node):
@@ -300,6 +306,18 @@ class ListDispatch(Node):
     
     def __iter__(self):
         return (item for item in self.items if item is not SENTINEL)
+    
+    def __copy__(self):
+        return ListDispatch(items=self.items[:])
+    
+    def __deepcopy__(self):
+        return ListDispatch(items=map(deepcopy, self.items))
+    
+    def map(self, fn):
+        return ListDispatch(
+            items=[SENTINEL if elem is SENTINEL else fn(elem)
+                   for elem in self.items]
+        )
 
 
 class BitMapDispatch(Node):
@@ -403,6 +421,19 @@ class BitMapDispatch(Node):
     
     def __nonzero__(self):
         return bool(self.items)
+    
+    def __copy__(self):
+        return BitMapDispatch(self.bitmap, self.items[:])
+    
+    def __deepcopy__(self):
+        return BitMapDispatch(self.bitmap, map(deepcopy, self.items))
+    
+    def map(self, fn):
+        return BitMapDispatch(
+            self.bitmap,
+            [SENTINEL if elem is SENTINEL else fn(elem)
+             for elem in self.items]
+        )
 
 
 class DispatchNode(Node):
@@ -506,3 +537,6 @@ class DispatchNode(Node):
         for child in self.children:
             for elem in child:
                 yield elem
+    
+    def __copy__(self):
+        return DispatchNode(self.children.map(copy))
