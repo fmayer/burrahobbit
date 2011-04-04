@@ -39,6 +39,34 @@ def test_or():
     assert set(df.iteritems()) == set(some.iteritems())
 
 
+def test_xor():
+    some = random_dict(1000)
+    some.update({'a': 'foo', 'b': 'bar', 'c': 'blub'})
+    other = random_dict(1000)
+    other.update({'a': 'blub', 'c': 'blab', 'd': 'quuz'})
+    
+    df = PersistentTreeMap.from_dict(some) ^ PersistentTreeMap.from_dict(other)
+    
+    for key, value in df.iteritems():
+        assert (
+            key in some and key not in other and some[key] == value
+        ) or key in other and key not in some and other[key] == value
+
+
+def test_and():
+    some = random_dict(1000)
+    some.update({'a': 'foo', 'b': 'bar', 'c': 'blub'})
+    other = random_dict(1000)
+    other.update({'a': 'blub', 'c': 'blab', 'd': 'quuz'})
+    
+    df = PersistentTreeMap.from_dict(some) & PersistentTreeMap.from_dict(other)
+    
+    for key, value in df.iteritems():
+        assert (
+            key in some and key in other and some[key] == value
+        )
+
+
 def test_fromdict():
     dct = random_dict(1000)
     mp = PersistentTreeMap.from_dict(dct)

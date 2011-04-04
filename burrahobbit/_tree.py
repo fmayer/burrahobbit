@@ -93,12 +93,16 @@ class Node(object):
         one = iter(self)
         other = iter(other)
         
+        run = True
+        
         for node in one:
-            while True:
+            while run:
                 try:
                     onode = other.next()
                 except StopIteration:
-                    return PersistentTreeMap(new)
+                    run = False
+                    break
+
                 
                 if onode.hsh == node.hsh:
                     new = new.assoc(onode.hsh, 0, onode)
@@ -106,7 +110,9 @@ class Node(object):
                 elif onode.hsh > node.hsh:
                     new = new.without(node.hsh, 0, node.key)
                     break
-        
+            if not run:
+                # TODO: Optimize: We could cut off whole branches here.
+                new = new.without(node.hsh, 0, node.key)
         return new
     
     def __xor__(self, other):
