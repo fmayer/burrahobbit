@@ -132,7 +132,9 @@ class NullNode(Node):
     """ Dummy node being the leaf of branches that have no entries. """
     __slots__ = []
     def xor(self, hsh, shift, node):
-        return node    
+        return node
+    
+    _ixor = xor
     
     @doc(ASSOC)
     def assoc(self, hsh, shift, node):
@@ -167,6 +169,10 @@ class NullNode(Node):
     
     def __copy__(self):
         return self
+    
+    def cutoff(self, hsh):
+        return self
+
 
 # We only need one instance of a NullNode because it does not contain
 # any data.
@@ -176,7 +182,7 @@ NULLNODE = NullNode()
 class HashCollisionNode(Node):
     """ If hashes of two keys collide, store them in a list and when a key
     is searched, iterate over that list and find the appropriate key. """
-    __slots__ = ['children']
+    __slots__ = ['children', 'hsh']
     def __init__(self, nodes):
         self.children = nodes
         self.hsh = hash(nodes[0].hsh)
@@ -184,6 +190,11 @@ class HashCollisionNode(Node):
     def xor(self, hsh, shift, node):
         if not any(node.key == child.key for child in self.children):
             return HashCollisionNode(self.children + [node])
+        return self
+    
+    def _ixor(self, hsh, shift, node):
+        if not any(node.key == child.key for child in self.children):
+            self.children.append(node)
         return self
     
     @doc(GET)
@@ -246,6 +257,11 @@ class HashCollisionNode(Node):
     
     def __copy__(self):
         return HashCollisionNode(map(copy, self.children))
+    
+    def cutoff(self, hsh):
+        if self.hsh <= hsh:
+            return NULLNODE
+        return self
 
 
 class ListDispatch(Node):
@@ -468,6 +484,18 @@ class DispatchNode(Node):
         
         return DispatchNode(newchildren)
     
+    def _ixor(self, hsh, shift, node):
+        rlv = relevant(hsh, shift)
+        newchild = self.children[rlv].xor(hsh, shift + SHIFT, key)
+        if newchild is NULLNODE:
+            self.children = self.children._iremove(rlv)
+            if not self.children:
+                return NULLNODE
+        else:
+            self.children = self.children._ireplace(rlv, newchild)
+        
+        return self
+    
     @doc(ASSOC)
     def assoc(self, hsh, shift, node):
         # We need not check whether the return value of
@@ -531,7 +559,7 @@ class DispatchNode(Node):
         newchild = self.children[rlv].without(hsh, shift + SHIFT, key)
         if newchild is NULLNODE:
             self.children = self.children._iremove(rlv)
-            if not newchildren:
+            if not self.children:
                 return NULLNODE
         else:
             self.children = self.children._ireplace(rlv, newchild)
