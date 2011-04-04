@@ -118,7 +118,7 @@ class Node(object):
     def __or__(self, other):
         new = self
         for node in other:
-            new = new.replace(node.hsh, 0, node)
+            new = new.assoc(node.hsh, 0, node)
         return new
 
 
