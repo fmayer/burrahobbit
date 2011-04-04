@@ -21,7 +21,7 @@
 from copy import deepcopy, copy
 
 from burrahobbit._tree import NULLNODE, SENTINEL
-from burrahobbit.set import SetNode
+from burrahobbit.treeset import SetNode
 
 class AssocNode(SetNode):
     """ A AssocNode contains the actual key-value mapping. """

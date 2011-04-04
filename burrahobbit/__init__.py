@@ -18,8 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from burrahobbit.set import PersistentTreeSet as set
-from burrahobbit.dict import PersistentTreeMap as dict
+from burrahobbit.treeset import PersistentTreeSet as set
+from burrahobbit.treedict import PersistentTreeMap as dict
 
 # Shadowing the imported names spares us from either deleting the old
 # references or defining __all__.
