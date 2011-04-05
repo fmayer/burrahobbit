@@ -21,6 +21,8 @@
 import os
 import pytest
 
+from copy import copy
+
 from burrahobbit.treedict import PersistentTreeMap, VolatileTreeMap
 
 
@@ -59,12 +61,14 @@ def test_and():
     other = random_dict(1000)
     other.update({'a': 'blub', 'c': 'blab', 'd': 'quuz'})
     
+    third = copy(some)
+    third.update(other)
+    
     df = PersistentTreeMap.from_dict(some) & PersistentTreeMap.from_dict(other)
     
-    for key, value in df.iteritems():
-        assert (
-            key in some and key in other and some[key] == value
-        )
+    for key in third:
+        if key in some and key in other:
+            assert df[key] == other[key]
 
 
 def test_fromdict():
