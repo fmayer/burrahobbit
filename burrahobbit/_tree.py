@@ -556,7 +556,7 @@ class DispatchNode(Node):
     @doc(IWITHOUT)
     def _iwithout(self, hsh, shift, key):
         rlv = relevant(hsh, shift)
-        newchild = self.children[rlv].without(hsh, shift + SHIFT, key)
+        newchild = self.children[rlv]._iwithout(hsh, shift + SHIFT, key)
         if newchild is NULLNODE:
             self.children = self.children._iremove(rlv)
             if not self.children:
