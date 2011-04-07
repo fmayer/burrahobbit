@@ -128,4 +128,15 @@ class VolatileTreeMap(PersistentTreeMap):
         return self
     
     def persistent(self):
-        return PersistentTreeMap(self.root)
+        """ Make the VolatileTreeMap immutable and return it. Often used in
+        the idiom `return mymap.persistent()`. """
+        # By modifing the original object, it is ensured that even if another
+        # reference is held, it cannot modify the underlying tree. If a copy
+        # of the VolatileTreeMap with a reference to the original tree is held
+        # somewhere, there is nothing we can do, though.
+        self.without = self._without
+        self.assoc = self._assoc
+        return self
+    
+    def volatile(self):
+        return self
