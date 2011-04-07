@@ -119,9 +119,6 @@ class VolatileTreeMap(PersistentTreeMap):
     
     The function has to return volatiletreemap.persistent() in order to ensure
     that the treemap cannot be changed afterwards. """
-    _without = PersistentTreeMap.without
-    _assoc = PersistentTreeMap.assoc
-    
     def assoc(self, key, value):
         """ Update this VolatileTreeMap to contain an association between
         key and value and return self. You should never assume that the
