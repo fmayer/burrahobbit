@@ -65,8 +65,6 @@ class SetNode(object):
     @doc(IASSOC)
     def _iassoc(self, hsh, shift, node):
         if node.key == self.key:
-            self.key = node.key
-            self.value = node.value
             return self
         
         if hsh == self.hsh:
@@ -116,13 +114,13 @@ class PersistentTreeSet(object):
     def add(self, key):
         """ Return copy of self with an association between key and value.
         May override an existing association. """
-        return PersistentTreeMap(
+        return PersistentTreeSet(
             self.root.assoc(hash(key), 0, SetNode(key))
         )
     
     def without(self, key):
         """ Return copy of self with key removed. """
-        return PersistentTreeMap(
+        return PersistentTreeSet(
             self.root.without(hash(key), 0, key)
         )
     
