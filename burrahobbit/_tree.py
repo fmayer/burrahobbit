@@ -94,7 +94,6 @@ class Node(object):
         for node in other:
             try:
                 self.get(hash(node.key), 0, node.key)
-                other.get(hash(node.key), 0, node.key)
             except KeyError:
                 pass
             else:
