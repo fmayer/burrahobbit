@@ -129,9 +129,7 @@ def test_volatile():
 def main():
     import os
     import time
-    # Prevent expensive look-up in loop, hence the from-import.
-    from copy import copy
-
+    
     mp = PersistentTreeMap().volatile()
     for _ in xrange(22500):
         one, other = os.urandom(20), os.urandom(25)
