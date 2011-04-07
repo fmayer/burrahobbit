@@ -1,0 +1,5 @@
+doc/build
+*.pyc
+burrahobbit.egg-info
+.tox
+*.wpr
