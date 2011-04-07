@@ -26,6 +26,18 @@ from copy import copy
 from burrahobbit.treedict import PersistentTreeMap, VolatileTreeMap
 
 
+class HashCollision(object):
+    def __init__(self, item, hsh):
+        self.item = item
+        self.hsh = hsh
+    
+    def __hash__(self):
+        return self.hsh
+    
+    def __eq__(self, other):
+        return isinstance(other, HashCollision) and self.item == other.item
+
+
 def random_dict(size):
     return dict((os.urandom(20), os.urandom(25)) for _ in xrange(size))
 
@@ -124,6 +136,15 @@ def test_volatile():
     assert mp3['foo'] == 'bar'
     assert mp4['foo'] == 'bar'
     assert mp5['foo'] == 'spam'
+
+
+def test_collision():
+    HASH = 13465345
+    mp = PersistentTreeMap()
+    mp = mp.assoc(HashCollision("hello", HASH), "world")
+    mp = mp.assoc(HashCollision("answer", HASH), 42)
+    assert mp[HashCollision("hello", HASH)] == "world"
+    assert mp[HashCollision("answer", HASH)] == 42
 
 
 def main():

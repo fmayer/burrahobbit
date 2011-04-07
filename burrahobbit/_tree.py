@@ -352,7 +352,7 @@ class BitMapDispatch(Node):
         # If the item already existed in the list, we need to replace it.
         # Otherwise, it will be added to the list at the appropriate
         # position.
-        if len(self.items) > MAXBITMAPDISPATCH:
+        if len(self.items) >= MAXBITMAPDISPATCH:
             new = self.to_listdispatch(BRANCH)
             return new._ireplace(key, item)
         
@@ -371,7 +371,7 @@ class BitMapDispatch(Node):
         """ Replace keyth item with item.
         
         USE WITH CAUTION. """
-        if len(self.items) > MAXBITMAPDISPATCH:
+        if len(self.items) >= MAXBITMAPDISPATCH:
             new = self.to_listdispatch(BRANCH)
             return new._ireplace(key, item)
         

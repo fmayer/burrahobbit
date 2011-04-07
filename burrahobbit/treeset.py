@@ -21,7 +21,7 @@
 from copy import deepcopy, copy
 
 from burrahobbit._tree import (
-    NULLNODE, GET, ASSOC, IASSOC, WITHOUT, doc, DispatchNode
+    NULLNODE, GET, ASSOC, IASSOC, WITHOUT, doc, DispatchNode, HashCollisionNode
 )
 
 class SetNode(object):
