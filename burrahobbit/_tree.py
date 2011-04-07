@@ -19,7 +19,6 @@
 # THE SOFTWARE.
 
 from copy import copy
-from itertools import chain
 
 SENTINEL = object()
 
@@ -92,7 +91,7 @@ class Node(object):
     def __and__(self, other):
         new = NULLNODE
         
-        for node in chain(self, other):
+        for node in other:
             try:
                 self.get(hash(node.key), 0, node.key)
                 other.get(hash(node.key), 0, node.key)
