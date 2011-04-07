@@ -135,4 +135,9 @@ class VolatileTreeMap(PersistentTreeMap):
         return self
     
     def persistent(self):
+        """ Return a persistent version of self.
+        
+        CAUTION: The :class:`VolatileTreeMap` MAY NOT BE USED
+        after calling this method.
+        """
         return PersistentTreeMap(self.root)

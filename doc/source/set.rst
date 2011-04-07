@@ -1,9 +1,10 @@
 Persistent Sets
 ===============
-A persistent dict is created by calling :func:`burrahobbit.set` which returns
+A persistent set is created by calling :func:`burrahobbit.set` which returns
 an object of the :class:`PersistentTreeSet` type (see below for a documentation
 of its methods). :func:`burrahobbit.set` behaves exactly the way the
-builtin :func:`set` function of Python does.
+builtin :func:`set` function of Python does, barring that it returns
+instances of :class:`PersistentTreeSet` instead of regular dicts.
 
 In addition to the methods described below, sets implement
 the binary operators &, | and ^ (and, or, xor): `a & b` returns a

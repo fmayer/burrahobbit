@@ -146,6 +146,10 @@ class PersistentTreeSet(object):
         return PersistentTreeSet.from_set(iterable)
         
     def volatile(self):
+        """ Return volatile (mutable) copy of self. Changing the copy will not
+        affect the original object's immutability.
+        
+        See :class:`VolatileTreeSet`. """
         return VolatileTreeSet(copy(self.root))
 
 
@@ -168,4 +172,9 @@ class VolatileTreeSet(PersistentTreeSet):
         return self
     
     def persistent(self):
+        """ Return a persistent version of self.
+        
+        CAUTION: The :class:`VolatileTreeMap` MAY NOT BE USED
+        after calling this method.
+        """
         return PersistentTreeSet(self.root)
