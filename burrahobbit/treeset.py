@@ -65,7 +65,7 @@ class SetNode(object):
     @doc(IASSOC)
     def _iassoc(self, hsh, shift, node):
         if node.key == self.key:
-            return self
+            return node
         
         if hsh == self.hsh:
             return HashCollisionNode(
