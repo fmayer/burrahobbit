@@ -7,4 +7,3 @@ def test_dispatch():
     assert isinstance(nd, BitMapDispatch)
     nd = nd.replace(17, None)
     assert isinstance(nd, ListDispatch)
-    
