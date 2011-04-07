@@ -1,9 +1,18 @@
 Persistent Dicts
 ================
-A persistent dict is created by calling :func:`burrahobbit.dict` which returns an
-object of the :class:`PersistentTreeMap` type (see below for a documentation
+A persistent dict is created by calling :func:`burrahobbit.dict` which returns
+an object of the :class:`PersistentTreeMap` type (see below for a documentation
 of its methods). :func:`burrahobbit.dict` behaves exactly the way the
 builtin dict function of Python does.
+
+In addition to the methods described below, dictionaries implement
+the binary operators &, | and ^ (and, or, xor): `a & b` returns a
+new persistent dictionary containing a mapping from all the keys that are
+contained in both `a` and `b` to the respective values in `b`; `a | b`
+returns `a` updated with the mappings in `b` (if a key is defined in both
+`a` and `b`, it is mapped to the value in `b`); `a ^ b` returns a new
+persistent dictionary with all items whose key is only contained in
+exactly one of them.
 
 Example
 -------
