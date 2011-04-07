@@ -85,6 +85,17 @@ IWITHOUT = "\n".join([
     "of the global constant BRANCH.",
 ])
 
+def _rv_gt(one, other):
+    while True:
+        if not one or not other:
+            return one
+        elif (one & BMAP) == (other & BMAP):
+            one >>= SHIFT
+            other >>= SHIFT
+        else:
+            return (one & BMAP) > (other & BMAP)
+
+
 class Node(object):
     __slots__ = []
     def __and__(self, other):
@@ -96,21 +107,14 @@ class Node(object):
         run = True
         
         for node in one:
-            while run:
-                try:
-                    onode = other.next()
-                except StopIteration:
-                    run = False
-                    break
-
-                
+            for onode in other:
                 if onode.hsh == node.hsh:
                     new = new.assoc(onode.hsh, 0, onode)
                     break
-                elif onode.hsh > node.hsh:
+                elif _rv_gt(onode.hsh, node.hsh):
                     new = new.without(node.hsh, 0, node.key)
                     break
-            if not run:
+            else:
                 # TODO: Optimize: We could cut off whole branches here.
                 new = new.without(node.hsh, 0, node.key)
         return new
