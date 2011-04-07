@@ -68,16 +68,19 @@ class PersistentTreeMap(object):
         )
     
     def __iter__(self):
+        """ Yield keys for all items. """
         for node in self.root:
             yield node.key
     
     iterkeys = __iter__
     
     def iteritems(self):
+        """ Yield key, value pairs for all items. """
         for node in self.root:
             yield node.key, node.value
     
     def itervalues(self):
+        """ Yield values for all items. """
         for node in self.root:
             yield node.value
     
@@ -90,6 +93,10 @@ class PersistentTreeMap(object):
         return mp.persistent()
     
     def volatile(self):
+        """ Return volatile (mutable) copy of self. Changing the copy will not
+        affect the original object's immutability.
+        
+        See :class:`VolatileTreeMap`. """
         return VolatileTreeMap(copy(self.root))
     
     @staticmethod
@@ -102,28 +109,31 @@ class PersistentTreeMap(object):
         if argument is SENTINEL:
             return PersistentTreeMap()
         
-        mp = VolatileTreeMap()
-        # Let the TypeError propagate.
-        for key, value in argument:
-            mp.assoc(key, value)
-        return mp.persistent()
+        return PersistentTreeMap.from_dict(argument)
 
 
 class VolatileTreeMap(PersistentTreeMap):
+    """
+    VolatileTreeMaps are used if - and only if - one function does so many
+    changes to a PersistentTreeMap the immutability would prove inefficient.
+    
+    The function has to return volatiletreemap.persistent() in order to ensure
+    that the treemap cannot be changed afterwards. """
+    _without = PersistentTreeMap.without
+    _assoc = PersistentTreeMap.assoc
+    
     def assoc(self, key, value):
         """ Update this VolatileTreeMap to contain an association between
-        key and value.
-        
-        USE WITH CAUTION: This should only be used if no other reference
-        to the PersistentTreeMap may exist. """
+        key and value and return self. You should never assume that the
+        object really is mutated as this only is an optimization, thus, you
+        should always bind the return value of this function to the 
+        respective name, e.g., `mymap.assoc("spam", "eggs")` should be avoided
+        and written as `mymap = mymap.assoc("spam", "eggs")` instead. """
         self.root = self.root._iassoc(hash(key), 0, AssocNode(key, value))
         return self
     
     def without(self, key):
-        """ Remove key.
-        
-        USE WITH CAUTION: This should only be used if no other reference
-        to the PersistentTreeMap may exist. """
+        """ Remove key. """
         self.root = self.root._iwithout(hash(key), 0, key)
         return self
     
