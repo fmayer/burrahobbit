@@ -103,7 +103,7 @@ class PersistentTreeSet(object):
             return False
     
     def __and__(self, other):
-        return PersistentTreeSet(self.root & other.root)
+        return other.__class__(self.root & other.root)
     
     def __xor__(self, other):
         return PersistentTreeSet(self.root ^ other.root)

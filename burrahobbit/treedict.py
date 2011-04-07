@@ -46,7 +46,7 @@ class PersistentTreeMap(object):
         return self.root.get(hash(key), 0, key).value
     
     def __and__(self, other):
-        return PersistentTreeMap(self.root & other.root)
+        return other.__class__(self.root & other.root)
     
     def __xor__(self, other):
         return PersistentTreeMap(self.root ^ other.root)

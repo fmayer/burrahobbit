@@ -12,7 +12,9 @@ contained in both `a` and `b` to the respective values in `b`; `a | b`
 returns `a` updated with the mappings in `b` (if a key is defined in both
 `a` and `b`, it is mapped to the value in `b`); `a ^ b` returns a new
 persistent dictionary with all items whose key is only contained in
-exactly one of them.
+exactly one of them. The return value of `a & b` is always the same type
+as `b` is (the rationale for this behaviour is that `a & b` only
+contains nodes from `b`).
 
 Example
 -------
