@@ -104,8 +104,6 @@ class Node(object):
         one = iter(self)
         other = iter(other)
         
-        run = True
-        
         for node in one:
             for onode in other:
                 if onode.hsh == node.hsh:
