@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 from copy import deepcopy, copy
+from itertools import chain
 
 SENTINEL = object()
 
@@ -85,36 +86,20 @@ IWITHOUT = "\n".join([
     "of the global constant BRANCH.",
 ])
 
-def _rv_gt(one, other):
-    while True:
-        if not one or not other:
-            return one
-        elif (one & BMAP) == (other & BMAP):
-            one >>= SHIFT
-            other >>= SHIFT
-        else:
-            return (one & BMAP) > (other & BMAP)
-
 
 class Node(object):
     __slots__ = []
     def __and__(self, other):
-        new = self
+        new = NULLNODE
         
-        one = iter(self)
-        other = iter(other)
-        
-        for node in one:
-            for onode in other:
-                if onode.hsh == node.hsh:
-                    new = new.assoc(onode.hsh, 0, onode)
-                    break
-                elif _rv_gt(onode.hsh, node.hsh):
-                    new = new.without(node.hsh, 0, node.key)
-                    break
+        for node in chain(self, other):
+            try:
+                self.get(hash(node.key), 0, node.key)
+                other.get(hash(node.key), 0, node.key)
+            except KeyError:
+                pass
             else:
-                # TODO: Optimize: We could cut off whole branches here.
-                new = new.without(node.hsh, 0, node.key)
+                new = new._iassoc(hash(node.key), 0, node)
         return new
     
     def __xor__(self, other):
