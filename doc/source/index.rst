@@ -9,7 +9,7 @@ Welcome to burrahobbit's documentation!
 containers that allow for cheap copies and similar time complexity to the
 builtin data-structures, e.g. dictionaries and sets have O(log32 n) access
 complexity. Compatibility is maintained with a wide range of Python versions:
-:mod:`burrahobbit` is tested against on all versions of CPython between 2.5
+:mod:`burrahobbit` is tested against on all versions of CPython between 2.4
 and 3.3 and against PyPy 1.4.
 It is heavily influenced by the persistent datastructures found in the Clojure
 programming language. New datastructures will be added in following releases,
