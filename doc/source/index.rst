@@ -26,12 +26,12 @@ function does many operations on the data-structure before exposing the
 object to other parts of the code by returning it or storing it within another
 data-structure). A volatile copy of a persistent data-structure can be
 created by calling its volatile member. Operations on the volatile data
-structure will apply operation on the data-structure and return it. Thus,
+structure will apply the operation on the data-structure and return it. Thus,
 volatile data-structures can be used equivalently to persistent ones if it is
 known that the state of the data-structure before the operation is no longer
 needed (which can only be known if it has not left the scope of the function
 operating on it - or helper functions thereof under the *direct control* of
-the developer. A volatile data-structure can be converted back into a
+the developer). A volatile data-structure can be converted back into a
 persistent one by calling its persistent member. Please be aware that after
 its persistent member has been called, a volatile data-structure must not be
 used any more, lest the persistent data-structure's persistence can no longer
