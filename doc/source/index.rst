@@ -5,15 +5,15 @@
 
 Welcome to burrahobbit's documentation!
 =======================================
-Burrahobbit is a project offering the developer persistent (immutable) data
+:mod:`burrahobbit` is a project offering the developer persistent (immutable) data
 containers that allow for cheap copies and similar time complexity to the
 builtin data-structures, e.g. dictionaries and sets have O(log32 n) access
-complexity.
-
+complexity. Compatibility is maintained with a wide range of Python versions:
+:mod:`burrahobbit` is tested against on all versions of CPython between 2.5
+and 3.3 and against PyPy 1.4.
 It is heavily influenced by the persistent datastructures found in the Clojure
 programming language. New datastructures will be added in following releases,
 0.1 will only provide sets and dicts.
-
 Persistent data-structures are of enormous value in multi-threaded programming
 because data-structures can be assumed not to change their value, this
 assuring that no other thread may interfere with one's calculation.
@@ -35,10 +35,21 @@ the developer). A volatile data-structure can be converted back into a
 persistent one by calling its persistent member. Please be aware that after
 its persistent member has been called, a volatile data-structure must not be
 used any more, lest the persistent data-structure's persistence can no longer
-be guaranteed.
+be guaranteed. A common idiom is to insert data into a volatile data-structure
+and eventually returning `return structure.persistent()`, e.g.
+::
+
+   import burrahobbit
+   
+   def double(dct):
+      new = burrahobbit.dict().volatile()
+      for key, value in dct:
+         new = new.assoc(key, value * 2)
+      return new.persistent()
 
 
-Contents:
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2
