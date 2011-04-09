@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: us-ascii -*-
 
-# Copyright (C) 2011 by Florian Mayer <flormayer@aim.com>
+# Copyright (C) 2011 by Florian Mayer <florian.mayer@bitsrc.org>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ setup(
     version=VERSION,
     description='Persistent data-structures in Python.',
     author='Florian Mayer',
-    author_email='flormayer@aim.com',
+    author_email='florian.mayer@bitsrc.org',
     url='https://github.com/segfaulthunter/burrahobbit',
     keywords='persistent datastructures',
     license='MIT',

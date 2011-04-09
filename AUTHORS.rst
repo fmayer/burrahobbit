@@ -1,3 +1,3 @@
 MAINTAINER
 ==========
-Florian Mayer <flormayer@aim.com>
+Florian Mayer <florian.mayer@bitsrc.org>
