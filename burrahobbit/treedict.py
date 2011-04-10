@@ -87,17 +87,17 @@ class PersistentTreeMap(object):
     @staticmethod
     def from_dict(dct):
         """ Create PersistentTreeMap from existing dictionary. """
-        mp = VolatileTreeMap()
+        mp = TransientTreeMap()
         for key, value in dct.iteritems():
             mp = mp.assoc(key, value)
         return mp.persistent()
     
-    def volatile(self):
-        """ Return volatile (mutable) copy of self. Changing the copy will not
+    def transient(self):
+        """ Return transient (mutable) copy of self. Changing the copy will not
         affect the original object's immutability.
         
-        See :class:`VolatileTreeMap`. """
-        return VolatileTreeMap(copy(self.root))
+        See :class:`TransientTreeMap`. """
+        return TransientTreeMap(copy(self.root))
     
     @staticmethod
     def construct(argument=SENTINEL, **kwargs):
@@ -112,15 +112,15 @@ class PersistentTreeMap(object):
         return PersistentTreeMap.from_dict(argument)
 
 
-class VolatileTreeMap(PersistentTreeMap):
+class TransientTreeMap(PersistentTreeMap):
     """
-    VolatileTreeMaps are used if - and only if - one function does so many
+    TransientTreeMaps are used if - and only if - one function does so many
     changes to a PersistentTreeMap the immutability would prove inefficient.
     
-    The function has to return volatiletreemap.persistent() in order to ensure
+    The function has to return transienttreemap.persistent() in order to ensure
     that the treemap cannot be changed afterwards. """
     def assoc(self, key, value):
-        """ Update this VolatileTreeMap to contain an association between
+        """ Update this TransientTreeMap to contain an association between
         key and value and return self. You should never assume that the
         object really is mutated as this only is an optimization, thus, you
         should always bind the return value of this function to the 
@@ -137,7 +137,7 @@ class VolatileTreeMap(PersistentTreeMap):
     def persistent(self):
         """ Return a persistent version of self.
         
-        CAUTION: The :class:`VolatileTreeMap` MAY NOT BE USED
+        CAUTION: The :class:`TransientTreeMap` MAY NOT BE USED
         after calling this method.
         """
         return PersistentTreeMap(self.root)

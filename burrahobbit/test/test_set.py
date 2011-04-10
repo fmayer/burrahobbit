@@ -23,7 +23,7 @@ import pytest
 
 from copy import copy
 
-from burrahobbit.treeset import PersistentTreeSet, VolatileTreeSet
+from burrahobbit.treeset import PersistentTreeSet, TransientTreeSet
 
 
 class HashCollision(object):
@@ -101,9 +101,9 @@ def test_iteration():
     assert set(mp) == st
 
 
-def test_volatile():
+def test_transient():
     mp = PersistentTreeSet.from_set(set(['foo']))
-    mp2 = mp.volatile()
+    mp2 = mp.transient()
     mp3 = mp2.add('bar')
     assert mp2 is mp3
     assert 'foo' in mp2

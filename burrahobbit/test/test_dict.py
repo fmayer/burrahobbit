@@ -23,7 +23,7 @@ import pytest
 
 from copy import copy
 
-from burrahobbit.treedict import PersistentTreeMap, VolatileTreeMap
+from burrahobbit.treedict import PersistentTreeMap, TransientTreeMap
 
 
 class HashCollision(object):
@@ -116,14 +116,14 @@ def test_novaluecopy():
     mp = PersistentTreeMap()
     bar = []
     mp = mp.assoc("foo", bar)
-    mv = mp.volatile()
+    mv = mp.transient()
     bar.append("test")
     assert mp["foo"] == mv["foo"] == bar
 
 
-def test_volatile():
+def test_transient():
     mp = PersistentTreeMap.from_dict({'foo': 'baz'})
-    mp2 = mp.volatile()
+    mp2 = mp.transient()
     mp3 = mp2.assoc('foo', 'bar')
     assert mp2['foo'] == 'bar'
     assert mp3['foo'] == 'bar'
@@ -151,7 +151,7 @@ def main():
     import os
     import time
     
-    mp = PersistentTreeMap().volatile()
+    mp = PersistentTreeMap().transient()
     for _ in xrange(22500):
         one, other = os.urandom(20), os.urandom(25)
         mp2 = mp.assoc(one, other)

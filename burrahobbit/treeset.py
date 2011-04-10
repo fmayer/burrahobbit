@@ -131,7 +131,7 @@ class PersistentTreeSet(object):
     @staticmethod
     def from_set(set_):
         """ Create PersistentTreeSet from existing set. """
-        mp = VolatileTreeSet()
+        mp = TransientTreeSet()
         for key in set_:
             mp = mp.add(key)
         return mp.persistent()
@@ -145,17 +145,17 @@ class PersistentTreeSet(object):
         
         return PersistentTreeSet.from_set(iterable)
         
-    def volatile(self):
-        """ Return volatile (mutable) copy of self. Changing the copy will not
+    def transient(self):
+        """ Return transient (mutable) copy of self. Changing the copy will not
         affect the original object's immutability.
         
-        See :class:`VolatileTreeSet`. """
-        return VolatileTreeSet(copy(self.root))
+        See :class:`TransientTreeSet`. """
+        return TransientTreeSet(copy(self.root))
 
 
-class VolatileTreeSet(PersistentTreeSet):
+class TransientTreeSet(PersistentTreeSet):
     def add(self, key):
-        """ Update this VolatileTreeMap to contain an association between
+        """ Update this TransientTreeMap to contain an association between
         key and value.
         
         USE WITH CAUTION: This should only be used if no other reference
@@ -174,7 +174,7 @@ class VolatileTreeSet(PersistentTreeSet):
     def persistent(self):
         """ Return a persistent version of self.
         
-        CAUTION: The :class:`VolatileTreeMap` MAY NOT BE USED
+        CAUTION: The :class:`TransientTreeMap` MAY NOT BE USED
         after calling this method.
         """
         return PersistentTreeSet(self.root)

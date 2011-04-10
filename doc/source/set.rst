@@ -21,7 +21,7 @@ contains nodes from `b`).
     :members:
     :exclude-members: from_set
 
-.. autoclass:: burrahobbit.treeset.VolatileTreeSet
+.. autoclass:: burrahobbit.treeset.TransientTreeSet
     :members: persistent
     
     All methods of PersistentTreeSet available, with the addition of

@@ -71,7 +71,7 @@ API Reference
     :members:
     :exclude-members: from_dict
 
-.. autoclass:: burrahobbit.treedict.VolatileTreeMap
+.. autoclass:: burrahobbit.treedict.TransientTreeMap
     :members: persistent
     
     All methods of PersistentTreeMap available, with the addition of
