@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from copy import deepcopy, copy
+from copy import copy
 
 from burrahobbit._tree import NULLNODE, SENTINEL
 from burrahobbit.treeset import SetNode

@@ -23,7 +23,7 @@ import pytest
 
 from copy import copy
 
-from burrahobbit.treedict import PersistentTreeMap, TransientTreeMap
+from burrahobbit.treedict import PersistentTreeMap
 
 
 class HashCollision(object):

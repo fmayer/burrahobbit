@@ -21,9 +21,7 @@
 import os
 import pytest
 
-from copy import copy
-
-from burrahobbit.treeset import PersistentTreeSet, TransientTreeSet
+from burrahobbit.treeset import PersistentTreeSet
 
 
 class HashCollision(object):

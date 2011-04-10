@@ -1,4 +1,4 @@
-from burrahobbit._tree import DispatchNode, BitMapDispatch, ListDispatch
+from burrahobbit._tree import BitMapDispatch, ListDispatch
 
 def test_dispatch():
     nd = BitMapDispatch()
