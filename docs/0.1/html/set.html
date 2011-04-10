@@ -1,0 +1,154 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Persistent Sets &mdash; burrahobbit v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="burrahobbit v0.1 documentation" href="index.html" />
+    <link rel="prev" title="Persistent Dicts" href="dict.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="dict.html" title="Persistent Dicts"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">burrahobbit v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="persistent-sets">
+<h1>Persistent Sets<a class="headerlink" href="#persistent-sets" title="Permalink to this headline">¶</a></h1>
+<p>A persistent set is created by calling <tt class="xref py py-func docutils literal"><span class="pre">burrahobbit.set()</span></tt> which returns
+an object of the <tt class="xref py py-class docutils literal"><span class="pre">PersistentTreeSet</span></tt> type (see below for a documentation
+of its methods). <tt class="xref py py-func docutils literal"><span class="pre">burrahobbit.set()</span></tt> behaves analogous to the builtin
+<tt class="xref py py-func docutils literal"><span class="pre">set()</span></tt> function with regards to the parameters it takes and how it
+interprets them.</p>
+<p>In addition to the methods described below, sets implement
+the binary operators &amp;, | and ^ (and, or, xor): <cite>a &amp; b</cite> returns a
+new value of <cite>b</cite>&#8216;s type consisting of all items of <cite>b</cite> whose key is
+also present in <cite>a</cite>; <cite>a | b</cite>
+returns <cite>a</cite> updated with the elements in <cite>b</cite>; <cite>a ^ b</cite> returns a new
+persistent set with all items that are only contained in
+exactly one of them. The return value of <cite>a &amp; b</cite> is always the same type
+as <cite>b</cite> is (the rationale for this behaviour is that <cite>a &amp; b</cite> only
+contains nodes from <cite>b</cite>).</p>
+<dl class="class">
+<dt id="burrahobbit.treeset.PersistentTreeSet">
+<em class="property">class </em><tt class="descclassname">burrahobbit.treeset.</tt><tt class="descname">PersistentTreeSet</tt><big>(</big><em>root=&lt;burrahobbit._tree.NullNode object at 0x2aad04dde5a0&gt;</em><big>)</big><a class="headerlink" href="#burrahobbit.treeset.PersistentTreeSet" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="burrahobbit.treeset.PersistentTreeSet.add">
+<tt class="descname">add</tt><big>(</big><em>key</em><big>)</big><a class="headerlink" href="#burrahobbit.treeset.PersistentTreeSet.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return copy of self with an association between key and value.
+May override an existing association.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="burrahobbit.treeset.PersistentTreeSet.transient">
+<tt class="descname">transient</tt><big>(</big><big>)</big><a class="headerlink" href="#burrahobbit.treeset.PersistentTreeSet.transient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return transient (mutable) copy of self. Changing the copy will not
+affect the original object&#8217;s immutability.</p>
+<p>See <tt class="xref py py-class docutils literal"><span class="pre">TransientTreeSet</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="burrahobbit.treeset.PersistentTreeSet.without">
+<tt class="descname">without</tt><big>(</big><em>key</em><big>)</big><a class="headerlink" href="#burrahobbit.treeset.PersistentTreeSet.without" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return copy of self with key removed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="burrahobbit.treeset.TransientTreeSet">
+<em class="property">class </em><tt class="descclassname">burrahobbit.treeset.</tt><tt class="descname">TransientTreeSet</tt><big>(</big><em>root=&lt;burrahobbit._tree.NullNode object at 0x2aad04dde5a0&gt;</em><big>)</big><a class="headerlink" href="#burrahobbit.treeset.TransientTreeSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>All methods of PersistentTreeSet available, with the addition of
+<tt class="xref py py-meth docutils literal"><span class="pre">persistent()</span></tt>.</p>
+<dl class="method">
+<dt id="burrahobbit.treeset.TransientTreeSet.persistent">
+<tt class="descname">persistent</tt><big>(</big><big>)</big><a class="headerlink" href="#burrahobbit.treeset.TransientTreeSet.persistent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a persistent version of self.</p>
+<p>CAUTION: The <tt class="xref py py-class docutils literal"><span class="pre">TransientTreeMap</span></tt> MAY NOT BE USED
+after calling this method.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dict.html"
+                        title="previous chapter">Persistent Dicts</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/set.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="dict.html" title="Persistent Dicts"
+             >previous</a> |</li>
+        <li><a href="index.html">burrahobbit v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Florian Mayer.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

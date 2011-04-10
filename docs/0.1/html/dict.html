@@ -1,0 +1,245 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Persistent Dicts &mdash; burrahobbit v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="burrahobbit v0.1 documentation" href="index.html" />
+    <link rel="next" title="Persistent Sets" href="set.html" />
+    <link rel="prev" title="Welcome to burrahobbit’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="set.html" title="Persistent Sets"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to burrahobbit’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">burrahobbit v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="persistent-dicts">
+<h1>Persistent Dicts<a class="headerlink" href="#persistent-dicts" title="Permalink to this headline">¶</a></h1>
+<p>A persistent dict is created by calling <tt class="xref py py-func docutils literal"><span class="pre">burrahobbit.dict()</span></tt> which returns
+an object of the <tt class="xref py py-class docutils literal"><span class="pre">PersistentTreeMap</span></tt> type (see below for a documentation
+of its methods). <tt class="xref py py-func docutils literal"><span class="pre">burrahobbit.dict()</span></tt> behaves exactly the way the
+builtin dict function of Python does, barring that it returns
+instances of <tt class="xref py py-class docutils literal"><span class="pre">PersistentTreeMap</span></tt> instead of regular dicts.</p>
+<p>In addition to the methods described below, dictionaries implement
+the binary operators &amp;, | and ^ (and, or, xor): <cite>a &amp; b</cite> returns a
+new persistent dictionary containing a mapping from all the keys that are
+contained in both <cite>a</cite> and <cite>b</cite> to the respective values in <cite>b</cite>; <cite>a | b</cite>
+returns <cite>a</cite> updated with the mappings in <cite>b</cite> (if a key is defined in both
+<cite>a</cite> and <cite>b</cite>, it is mapped to the value in <cite>b</cite>); <cite>a ^ b</cite> returns a new
+persistent dictionary with all items whose key is only contained in
+exactly one of them. The return value of <cite>a &amp; b</cite> is always the same type
+as <cite>b</cite> is (the rationale for this behaviour is that <cite>a &amp; b</cite> only
+contains nodes from <cite>b</cite>).</p>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">burrahobbit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dct</span> <span class="o">=</span> <span class="n">burrahobbit</span><span class="o">.</span><span class="n">dict</span><span class="p">(</span><span class="n">foo</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dct</span><span class="p">[</span><span class="s">&quot;foo&quot;</span><span class="p">]</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newdict</span> <span class="o">=</span> <span class="n">dct</span><span class="o">.</span><span class="n">assoc</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="s">&quot;spam&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dct</span><span class="p">[</span><span class="s">&quot;foo&quot;</span><span class="p">]</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dct</span><span class="p">[</span><span class="s">&quot;bar&quot;</span><span class="p">]</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+  File <span class="nb">&quot;/home/name/projects/burrahobbit/burrahobbit/treedict.py&quot;</span>, line <span class="m">46</span>, in <span class="n">__getitem__</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+  File <span class="nb">&quot;/home/name/projects/burrahobbit/burrahobbit/treeset.py&quot;</span>, line <span class="m">46</span>, in <span class="n">get</span>
+    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+<span class="gr">KeyError</span>: <span class="n">&#39;bar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newdict</span><span class="p">[</span><span class="s">&quot;foo&quot;</span><span class="p">]</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newdict</span><span class="p">[</span><span class="s">&quot;bar&quot;</span><span class="p">]</span>
+<span class="go">&#39;spam&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">newdict</span><span class="p">)</span>
+<span class="go">[&#39;bar&#39;, &#39;foo&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">newdict</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">())</span>
+<span class="go">[&#39;bar&#39;, &#39;foo&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">newdict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">())</span>
+<span class="go">[(&#39;bar&#39;, &#39;spam&#39;), (&#39;foo&#39;, 1)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">newdict</span><span class="o">.</span><span class="n">itervalues</span><span class="p">())</span>
+<span class="go">[&#39;spam&#39;, 1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newerdict</span> <span class="o">=</span> <span class="n">newdict</span><span class="o">.</span><span class="n">without</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newerdict</span><span class="p">[</span><span class="s">&quot;foo&quot;</span><span class="p">]</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+  File <span class="nb">&quot;/home/name/projects/burrahobbit/burrahobbit/treedict.py&quot;</span>, line <span class="m">46</span>, in <span class="n">__getitem__</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+  File <span class="nb">&quot;/home/name/projects/burrahobbit/burrahobbit/_tree.py&quot;</span>, line <span class="m">522</span>, in <span class="n">get</span>
+    <span class="n">hsh</span><span class="p">,</span> <span class="n">shift</span> <span class="o">+</span> <span class="n">SHIFT</span><span class="p">,</span> <span class="n">key</span>
+  File <span class="nb">&quot;/home/name/projects/burrahobbit/burrahobbit/_tree.py&quot;</span>, line <span class="m">139</span>, in <span class="n">get</span>
+    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+<span class="gr">KeyError</span>: <span class="n">&#39;foo&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newerdict</span><span class="p">[</span><span class="s">&quot;bar&quot;</span><span class="p">]</span>
+<span class="go">&#39;spam&#39;</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="burrahobbit.treedict.PersistentTreeMap">
+<em class="property">class </em><tt class="descclassname">burrahobbit.treedict.</tt><tt class="descname">PersistentTreeMap</tt><big>(</big><em>root=&lt;burrahobbit._tree.NullNode object at 0x2aad04dde5a0&gt;</em><big>)</big><a class="headerlink" href="#burrahobbit.treedict.PersistentTreeMap" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="burrahobbit.treedict.PersistentTreeMap.assoc">
+<tt class="descname">assoc</tt><big>(</big><em>key</em>, <em>value</em><big>)</big><a class="headerlink" href="#burrahobbit.treedict.PersistentTreeMap.assoc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return copy of self with an association between key and value.
+May override an existing association.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="burrahobbit.treedict.PersistentTreeMap.iteritems">
+<tt class="descname">iteritems</tt><big>(</big><big>)</big><a class="headerlink" href="#burrahobbit.treedict.PersistentTreeMap.iteritems" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield key, value pairs for all items.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="burrahobbit.treedict.PersistentTreeMap.iterkeys">
+<tt class="descname">iterkeys</tt><big>(</big><big>)</big><a class="headerlink" href="#burrahobbit.treedict.PersistentTreeMap.iterkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield keys for all items.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="burrahobbit.treedict.PersistentTreeMap.itervalues">
+<tt class="descname">itervalues</tt><big>(</big><big>)</big><a class="headerlink" href="#burrahobbit.treedict.PersistentTreeMap.itervalues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield values for all items.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="burrahobbit.treedict.PersistentTreeMap.transient">
+<tt class="descname">transient</tt><big>(</big><big>)</big><a class="headerlink" href="#burrahobbit.treedict.PersistentTreeMap.transient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return transient (mutable) copy of self. Changing the copy will not
+affect the original object&#8217;s immutability.</p>
+<p>See <tt class="xref py py-class docutils literal"><span class="pre">TransientTreeMap</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="burrahobbit.treedict.PersistentTreeMap.without">
+<tt class="descname">without</tt><big>(</big><em>key</em><big>)</big><a class="headerlink" href="#burrahobbit.treedict.PersistentTreeMap.without" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return copy of self with key removed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="burrahobbit.treedict.TransientTreeMap">
+<em class="property">class </em><tt class="descclassname">burrahobbit.treedict.</tt><tt class="descname">TransientTreeMap</tt><big>(</big><em>root=&lt;burrahobbit._tree.NullNode object at 0x2aad04dde5a0&gt;</em><big>)</big><a class="headerlink" href="#burrahobbit.treedict.TransientTreeMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>TransientTreeMaps are used if - and only if - one function does so many
+changes to a PersistentTreeMap the immutability would prove inefficient.</p>
+<p>The function has to return transienttreemap.persistent() in order to ensure
+that the treemap cannot be changed afterwards.</p>
+<p>All methods of PersistentTreeMap available, with the addition of
+<tt class="xref py py-meth docutils literal"><span class="pre">persistent()</span></tt>.</p>
+<dl class="method">
+<dt id="burrahobbit.treedict.TransientTreeMap.persistent">
+<tt class="descname">persistent</tt><big>(</big><big>)</big><a class="headerlink" href="#burrahobbit.treedict.TransientTreeMap.persistent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a persistent version of self.</p>
+<p>CAUTION: The <tt class="xref py py-class docutils literal"><span class="pre">TransientTreeMap</span></tt> MAY NOT BE USED
+after calling this method.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Persistent Dicts</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#api-reference">API Reference</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to burrahobbit&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="set.html"
+                        title="next chapter">Persistent Sets</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/dict.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="set.html" title="Persistent Sets"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to burrahobbit’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">burrahobbit v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Florian Mayer.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

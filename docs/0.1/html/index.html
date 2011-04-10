@@ -1,0 +1,171 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to burrahobbit’s documentation! &mdash; burrahobbit v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="burrahobbit v0.1 documentation" href="#" />
+    <link rel="next" title="Persistent Dicts" href="dict.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="dict.html" title="Persistent Dicts"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">burrahobbit v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-burrahobbit-s-documentation">
+<h1>Welcome to burrahobbit&#8217;s documentation!<a class="headerlink" href="#welcome-to-burrahobbit-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p><tt class="xref py py-mod docutils literal"><span class="pre">burrahobbit</span></tt> is a project offering the developer persistent (immutable) data
+containers that allow for cheap copies and similar time complexity to the
+builtin data-structures, e.g. dictionaries and sets have O(log32 n) access
+complexity. Compatibility is maintained with a wide range of Python versions:
+<tt class="xref py py-mod docutils literal"><span class="pre">burrahobbit</span></tt> is tested against on all versions of CPython between 2.4
+and 3.3 and against PyPy 1.4.
+It is heavily influenced by the persistent datastructures found in the Clojure
+programming language. New datastructures will be added in following releases,
+0.1 will only provide sets and dicts.
+Persistent data-structures are of enormous value in multi-threaded programming
+because data-structures can be assumed not to change their value, this
+assuring that no other thread may interfere with one&#8217;s calculation.</p>
+<p><tt class="xref py py-mod docutils literal"><span class="pre">burrahobbit</span></tt> also has the concept of transient data-structures. A
+transient data-structure is a mutable version of a persistent data-structure
+that can be used if many changes are done to an objects before it is exposed
+to other parts of the code (i.e. it is designed for the use where a single
+function does many operations on the data-structure before exposing the
+object to other parts of the code by returning it or storing it within another
+data-structure). A transient copy of a persistent data-structure can be
+created by calling its transient member. Operations on the transient data
+structure will apply the operation on the data-structure and return it. Thus,
+transient data-structures can be used equivalently to persistent ones if it is
+known that the state of the data-structure before the operation is no longer
+needed (which can only be known if it has not left the scope of the function
+operating on it - or helper functions thereof under the <em>direct control</em> of
+the developer). A transient data-structure can be converted back into a
+persistent one by calling its persistent member. Please be aware that after
+its persistent member has been called, a transient data-structure must not be
+used any more, lest the persistent data-structure&#8217;s persistence can no longer
+be guaranteed. A common idiom is to insert data into a transient data-structure
+and eventually returning <cite>return structure.persistent()</cite>, e.g.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">burrahobbit</span>
+
+<span class="k">def</span> <span class="nf">double</span><span class="p">(</span><span class="n">dct</span><span class="p">):</span>
+   <span class="n">new</span> <span class="o">=</span> <span class="n">burrahobbit</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span><span class="o">.</span><span class="n">transient</span><span class="p">()</span>
+   <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">dct</span><span class="p">:</span>
+      <span class="n">new</span> <span class="o">=</span> <span class="n">new</span><span class="o">.</span><span class="n">assoc</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+   <span class="k">return</span> <span class="n">new</span><span class="o">.</span><span class="n">persistent</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dict.html">Persistent Dicts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dict.html#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dict.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="set.html">Persistent Sets</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to burrahobbit&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#contents">Contents</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="dict.html"
+                        title="next chapter">Persistent Dicts</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="dict.html" title="Persistent Dicts"
+             >next</a> |</li>
+        <li><a href="#">burrahobbit v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Florian Mayer.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
