@@ -35,6 +35,12 @@ class AssocNode(SetNode):
     
     def __copy__(self):
         return AssocNode(self.key, self.value)
+    
+    def __eq__(self, other):
+        return self.key == other.key and self.value == other.value
+    
+    def __neq__(self, other):
+        return self.key != other.key or self.value != other.value
 
 
 class PersistentTreeMap(object):
@@ -53,6 +59,12 @@ class PersistentTreeMap(object):
     
     def __or__(self, other):
         return PersistentTreeMap(self.root | other.root)
+    
+    def __eq__(self, other):
+        return self.root == other.root
+    
+    def __neq__(self, other):
+        return self.root == other.root
     
     def assoc(self, key, value):
         """ Return copy of self with an association between key and value.

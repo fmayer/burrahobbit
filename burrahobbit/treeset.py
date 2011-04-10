@@ -88,6 +88,12 @@ class SetNode(object):
     
     def __copy__(self):
         return SetNode(self.key)
+    
+    def __eq__(self, other):
+        return self.key == other.key
+    
+    def __neq__(self, other):
+        return self.key != other.key
 
 
 class PersistentTreeSet(object):

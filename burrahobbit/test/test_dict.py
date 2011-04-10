@@ -147,6 +147,23 @@ def test_collision():
     assert mp[HashCollision("answer", HASH)] == 42
 
 
+def test_neq():
+    some = random_dict(1000)
+    some.update({'a': 'foo', 'b': 'bar', 'c': 'blub'})
+    other = random_dict(1000)
+    other.update({'a': 'blub', 'c': 'blab', 'd': 'quuz'})
+    assert (
+        PersistentTreeMap.from_dict(some) != PersistentTreeMap.from_dict(other)
+    )
+
+
+def test_eq():
+    some = random_dict(1000)
+    assert (
+        PersistentTreeMap.from_dict(some) == PersistentTreeMap.from_dict(some)
+    )
+
+
 def main():
     import os
     import time

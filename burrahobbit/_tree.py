@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 from copy import copy
+from itertools import izip
 
 SENTINEL = object()
 
@@ -111,6 +112,12 @@ class Node(object):
         for node in other:
             new = new.assoc(node.hsh, 0, node)
         return new
+    
+    def __eq__(self, other):
+        return all(node == othernode for node, othernode in izip(self, other))
+    
+    def __neq__(self, other):
+        return any(node != othernode for node, othernode in izip(self, other))
 
 
 class NullNode(Node):
