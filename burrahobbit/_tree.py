@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from copy import copy
+from copy import copy, deepcopy
 from itertools import izip
 
 SENTINEL = object()
@@ -478,7 +478,7 @@ class DispatchNode(Node):
     
     def _ixor(self, hsh, shift, node):
         rlv = relevant(hsh, shift)
-        newchild = self.children[rlv].xor(hsh, shift + SHIFT, key)
+        newchild = self.children[rlv].xor(hsh, shift + SHIFT, node)
         if newchild is NULLNODE:
             self.children = self.children._iremove(rlv)
             if not self.children:
