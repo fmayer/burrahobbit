@@ -214,7 +214,7 @@ class HashCollisionNode(Node):
         if hsh == self.hsh:
             self.children.append(node)
             return self
-        return DispatchNode.make(shift, [self, node])        
+        return DispatchNode.make(shift, [self, node])
     
     @doc(WITHOUT)
     def without(self, hsh, shift, key):
