@@ -43,7 +43,7 @@ setup(
     description='Persistent data-structures in Python.',
     author='Florian Mayer',
     author_email='florian.mayer@bitsrc.org',
-    url='https://github.com/segfaulthunter/burrahobbit',
+    url='http://segfaulthunter.github.com/burrahobbit',
     keywords='persistent datastructures',
     license='MIT',
     zip_safe=True,
