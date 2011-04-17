@@ -518,7 +518,7 @@ class DispatchNode(Node):
         # to any other code, we may safely call _iassoc.
         dsp = cls()
         for elem in many:
-            dsp._iassoc(elem.hsh, shift, elem)
+            dsp = dsp._iassoc(elem.hsh, shift, elem)
         return dsp
     
     @doc(GET)
