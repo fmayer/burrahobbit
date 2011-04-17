@@ -28,7 +28,7 @@ THE SOFTWARE.
 #define BRANCH 32
 
 #define relevant(hsh, shift) (hsh >> shift & BMAP)
-#define call(obj, fun, ...) ((node_cls*) obj->cls)->fun(__VA_ARGS__))
+#define call(obj, fun, ...) ((node_cls*) obj->cls)->fun(obj, __VA_ARGS__))
 
 typedef int hashtype;
 
@@ -41,8 +41,7 @@ typedef struct {
     void* (*assoc)(void*, hashtype, int, key*, void*);
     void* (*without)(void*, hashtype, int, key*);
     void* (*get)(void*, hashtype, int, key*);
-    void* (*deref)(void*);
-    void* (*incref)(void*);
+    void (*deref)(void*);
 } node_cls;
 
 typedef struct {
@@ -86,7 +85,6 @@ assoc_node* new_assoc(key* k, void* v);
 
 void incref(node* x) {
     ++x->refs;
-    x->cls->incref(x);
 }
 
 void decref(node* x) {
@@ -140,6 +138,17 @@ void* dispatch_get(void* this, hashtype hsh, int shf, key* k) {
     return ((node_cls*) self->members[rel])->get(
         newmembers[rel], hsh, shf + SHIFT, k
     );
+}
+
+void dispatch_deref(void* this) {
+    dispatch_node* self = (dispatch_node*) this;
+    
+    unsigned int i;
+    for (i=0; i < BRANCH; ++i) {
+        ((node_cls*) self->members[i])->deref(self->members[i]);
+    }
+    
+    free(self);
 }
 
 void* collision_assoc(void* this, hashtype hsh, int shf, key* k, set_node* n) {
@@ -201,9 +210,41 @@ void* collision_get(void* this, hashtype hsh, int shf, key* k) {
     return NULL;
 }
 
-const node_cls dispatch = { dispatch_assoc, dispatch_without, dispatch_get, dispatch_ };
-const node_cls collision = { collision_assoc, collision_without };
-const node_cls assoc = { assoc_assoc, assoc_without };
+void collision_deref(void* this) {
+    collision_node* self = (collision_node*) this;
+    
+    unsigned int i;
+    for (i=0; i < self->nmembers; ++i) {
+        ((node_cls* ) self->members[i])->deref(self->members[i]);
+    }
+    
+    free(self);
+}
+
+
+void* null_assoc(void* this, hashtype hsh, int shf, key* k, set_node* n) {
+    return n;
+}
+
+void* null_without(void* this, hashtype hsh, int shf, key* k) {
+    return this;
+}
+
+void* null_get(void* this, hashtype hsh, int shf, key* k) {
+    return NULL;
+}
+
+void* null_deref(void* this) {
+}
+
+const node_cls dispatch =
+    { dispatch_assoc, dispatch_without, dispatch_get, dispatch_deref };
+const node_cls collision =
+    { collision_assoc, collision_without, collision_get, collision_deref };
+const node_cls assoc = { assoc_assoc, assoc_without, assoc_get, assoc_deref };
+const node_cls null = { null_assoc, null_without, null_get, null_deref };
+
+const node nullnode = { &null, 1 };
 
 
 dispatch_node* new_dispatch(void* members[]) {
