@@ -5,3 +5,9 @@
 - Comprehensive documentation
 - Website
 - Improved test-suite
+
+0.2.0
+=====
+
+- burrahobbit._ctree to improve performance and most importantly reduce
+  memory footprint.
