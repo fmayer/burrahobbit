@@ -83,8 +83,12 @@ typedef struct {
 } assoc_node;
 
 dispatch_node* new_dispatch(void* members[]);
-collision_node* new_collision(int nmembers, void* members);
-assoc_node* new_assoc(key* k, void* v);
+collision_node* new_collision(int nmembers, set_node* members);
+assoc_node* new_assoc(unsigned int hsh, key* k, void* v);
+
+dispatch_node* dispatch_two(
+    int shf, set_node* one, set_node* other
+    );
 
 void incref(node* x) {
     ++x->refs;
@@ -237,19 +241,29 @@ void* null_get(void* this, hashtype hsh, int shf, key* k) {
     return NULL;
 }
 
-void* assoc_deref(void* this) {
+void* null_deref(void* this) {
 }
 
 void* assoc_assoc(void* this, hashtype hsh, int shf, key* k, set_node* n) {
-    return n;
+    assoc_node* self = (assoc_node*) this;
+    if (self->hsh == hsh && self->k->cmp(self->k, k)) {
+        return n;
+    } else {
+        return dispatch_two(shf, ((set_node*) this), n);
+    }
 }
 
 void* assoc_without(void* this, hashtype hsh, int shf, key* k) {
-    return this;
+    assoc_node* self = (assoc_node*) this;
+    if (self->hsh == hsh && self->k->cmp(self->k, k)) {
+        return NULL;
+    } else {
+        return this;
+    }
 }
 
 void* assoc_get(void* this, hashtype hsh, int shf, key* k) {
-    return NULL;
+    return this;
 }
 
 void* assoc_deref(void* this) {
@@ -263,22 +277,6 @@ const node_cls assoc = { assoc_assoc, assoc_without, assoc_get, assoc_deref };
 const node_cls null = { null_assoc, null_without, null_get, null_deref };
 
 const node nullnode = { &null, 1 };
-
-dispatch_node* dispatch_many(
-    unsigned int shf, set_node* members, unsigned int nmembers
-    ) {
-    dispatch_node* nd = empty_dispatch();
-    dispatch_node* nnd;
-    
-    unsigned int i;
-    for (i = 0; i < nmembers; ++i) {
-        nnd = dispatch_assoc(nd);
-        deref(nd);
-        nd = nnd;
-    }
-    
-    return nd;
-}
 
 dispatch_node* new_dispatch(void* members[]) {
     dispatch_node* updated = calloc(1, sizeof(dispatch_node));
@@ -305,11 +303,24 @@ dispatch_node* empty_dispatch() {
     return updated;
 }
 
+dispatch_node* dispatch_two(
+    int shf, set_node* one, set_node* other
+    ) {
+    dispatch_node* nd = empty_dispatch();
+    dispatch_node* nnd;
+    
+    nnd = dispatch_assoc(nd, one->hsh, shf, one->k, one);
+    decref(nd);
+    nd = dispatch_assoc(nnd, other->hsh, shf, other->k, other);
+    decref(nnd);
+    return nd;
+}
+
 collision_node* new_collision(int nmembers, set_node* members) {
     unsigned int i;
     
     for (i = 0; i < nmembers; ++i) {
-        incref(members[i]);
+        incref(members + i);
     }
     collision_node* updated = calloc(1, sizeof(collision_node));
     updated->cls = &collision;
@@ -328,4 +339,34 @@ assoc_node* new_assoc(unsigned int hsh, key* k, void* v) {
     updated->v = v;
     updated->hsh = hsh;
     return updated;
+}
+
+/* For testing purposes only. */
+
+typedef struct {
+    unsigned char (*cmp)(void*, void*);
+    void* value;
+    size_t length;
+} ckey;
+
+unsigned char cmp_ckey(void* vone, void* vother) {
+    ckey* one = (ckey*) vone;
+    ckey* other = (ckey*) vother;
+    if (one->length != other->length) {
+        return 0;
+    }
+    
+    return !memcmp(one->value, other->value, one->length);
+}
+
+ckey* new_ckey(char* data, size_t n) {
+    ckey* new = malloc(sizeof(ckey));
+    new->cmp = cmp_ckey;
+    new->value = data;
+    new->length = n;
+    return new;
+}
+
+int main(char** argv, size_t argc) {
+    return 0;
 }
