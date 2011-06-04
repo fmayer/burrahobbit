@@ -97,6 +97,13 @@ class PersistentTreeMap(object):
             yield node.value
     
     @staticmethod
+    def from_itr(itr):
+        mp = TransientTreeMap()
+        for key, value in itr:
+            mp = mp.assoc(key, value)
+        return mp.persistent()        
+    
+    @staticmethod
     def from_dict(dct):
         """ Create PersistentTreeMap from existing dictionary. """
         mp = TransientTreeMap()
@@ -121,7 +128,16 @@ class PersistentTreeMap(object):
         if argument is SENTINEL:
             return PersistentTreeMap()
         
-        return PersistentTreeMap.from_dict(argument)
+        if isinstance(argument, dict):
+            return PersistentTreeMap.from_dict(argument)
+        
+        if isinstance(argument, TransientTreeMap):
+            return PersistentTreeMap(copy(argument.root))
+        
+        if isinstance(argument, PersistentTreeMap):
+            return argument
+                
+        return PersistentTreeMap.from_itr(argument)
 
 
 class TransientTreeMap(PersistentTreeMap):
