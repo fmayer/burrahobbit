@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 #define relevant(hsh, shift) (hsh >> shift & BMAP)
 /* This is currently not used as it is only C99. Kept here for reference */
-#define call(obj, fun, ...) ((node_cls*) obj->cls)->fun(obj, __VA_ARGS__))
+#define call(obj, fun, ...) ((node_cls*) obj->cls)->fun(obj, __VA_ARGS__)
 
 typedef int hashtype;
 
