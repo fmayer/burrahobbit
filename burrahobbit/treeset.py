@@ -117,6 +117,12 @@ class PersistentTreeSet(object):
     def __or__(self, other):
         return PersistentTreeSet(self.root | other.root)
     
+    def __eq__(self, other):
+        return self.root == other.root
+    
+    def __neq__(self, other):
+        return self.root != other.root
+    
     def add(self, key):
         """ Return copy of self with an association between key and value.
         May override an existing association. """

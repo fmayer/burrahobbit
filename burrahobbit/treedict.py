@@ -64,7 +64,7 @@ class PersistentTreeMap(object):
         return self.root == other.root
     
     def __neq__(self, other):
-        return self.root == other.root
+        return self.root != other.root
     
     def assoc(self, key, value):
         """ Return copy of self with an association between key and value.
