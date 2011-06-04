@@ -187,7 +187,7 @@ void* collision_without(void* this, hashtype hsh, int shf, key* k) {
     int i, j;
     for (i = 0; i < self->nmembers; ++i) {
         if (k->cmp(k, self->members[i]->k)) {
-            if (!self->nmembers - 1) {
+            if (!(self->nmembers - 1)) {
                 return NULL;
             }
             newmembers = calloc(self->nmembers - 1, sizeof(void));
