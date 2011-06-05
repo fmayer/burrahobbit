@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 from copy import copy
+from sys import version_info
 
 from burrahobbit._tree import NULLNODE, SENTINEL
 from burrahobbit.treeset import SetNode
@@ -95,6 +96,15 @@ class PersistentTreeMap(object):
         """ Yield values for all items. """
         for node in self.root:
             yield node.value
+    
+    if version_info >= (3,):
+        keys = iterkeys
+        items = iteritems
+        values = itervalues
+    else:
+        keys = lambda self: list(self)
+        items = lambda self: list(self.iteritems())
+        values = lambda self: list(self.itervalues())
     
     @staticmethod
     def from_itr(itr):
