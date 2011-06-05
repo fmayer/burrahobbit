@@ -21,6 +21,8 @@
 from copy import copy, deepcopy
 from itertools import izip
 
+from burrahobbit.util import all
+
 SENTINEL = object()
 
 SHIFT = 5
@@ -328,10 +330,12 @@ class ListDispatch(Node):
         return ListDispatch(items=map(deepcopy, self.items))
     
     def map(self, fn):
-        return ListDispatch(
-            items=[SENTINEL if elem is SENTINEL else fn(elem)
-                   for elem in self.items]
-        )
+        newitems = []
+        for elem in self.items:
+            if elem is not SENTINEL:
+                elem = fn(elem)
+            newitems.append(elem)
+        return ListDispatch(items=newitems)
 
 
 class BitMapDispatch(Node):

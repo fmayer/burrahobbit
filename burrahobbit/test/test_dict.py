@@ -100,8 +100,7 @@ def test_persistence():
     assert mp2['b'] == 'world'
     mp3 = mp2.without('a')
     assert mp3['b'] == 'world'
-    with pytest.raises(KeyError) as excinfo:
-        assert mp3['a'] == 'hello'
+    excinfo = pytest.raises(KeyError, lambda: mp3['a'])
     assert excinfo.value.args[0] == 'a'
 
 
