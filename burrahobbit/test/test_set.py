@@ -21,6 +21,7 @@
 import os
 import pytest
 
+from burrahobbit import set as bset
 from burrahobbit.treeset import PersistentTreeSet
 
 
@@ -125,3 +126,17 @@ def test_collision():
     mp = mp.add(HashCollision("answer", HASH))
     assert HashCollision("hello", HASH) in mp
     assert HashCollision("answer", HASH) in mp
+
+
+def test_eq():
+    assert bset(['foo', 'bar']) == bset(['bar', 'foo'])
+
+
+def test_construct():
+    assert (
+        bset(set(['foo', 'bar'])) ==
+        bset(['foo', 'bar']) ==
+        bset({'foo': 1, 'bar': 2}) ==
+        bset(iter(['foo', 'bar'])) ==
+        bset(bset(['foo', 'bar']))
+    )

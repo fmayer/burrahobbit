@@ -18,12 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from burrahobbit._tree import BitMapDispatch, ListDispatch
+def _all(iterable):
+    for elem in iterable:
+        if not elem:
+            return False
+    return True
 
-def test_dispatch():
-    nd = BitMapDispatch()
-    for key in xrange(16):
-        nd = nd.replace(key, None)
-    assert isinstance(nd, BitMapDispatch)
-    nd = nd.replace(17, None)
-    assert isinstance(nd, ListDispatch)
+try:
+    all = all
+except NameError:
+    all = _all

@@ -23,6 +23,7 @@ import pytest
 
 from copy import copy
 
+from burrahobbit import dict as bdict
 from burrahobbit.treedict import PersistentTreeMap
 
 
@@ -99,8 +100,7 @@ def test_persistence():
     assert mp2['b'] == 'world'
     mp3 = mp2.without('a')
     assert mp3['b'] == 'world'
-    with pytest.raises(KeyError) as excinfo:
-        assert mp3['a'] == 'hello'
+    excinfo = pytest.raises(KeyError, lambda: mp3['a'])
     assert excinfo.value.args[0] == 'a'
 
 
@@ -161,6 +161,20 @@ def test_eq():
     some = random_dict(1000)
     assert (
         PersistentTreeMap.from_dict(some) == PersistentTreeMap.from_dict(some)
+    )
+    assert (
+        PersistentTreeMap.from_dict(some) ==
+        PersistentTreeMap.from_itr(sorted(some.iteritems()))
+    )
+
+
+def test_construct():
+    assert (
+        bdict(foo=1, bar=2) ==
+        bdict({'foo': 1, 'bar': 2}) ==
+        bdict([('foo', 1), ('bar', 2)]) ==
+        bdict(iter([('foo', 1), ('bar', 2)])) ==
+        bdict(bdict(foo=1, bar=2))
     )
 
 

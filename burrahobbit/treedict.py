@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 from copy import copy
+from sys import version_info
 
 from burrahobbit._tree import NULLNODE, SENTINEL
 from burrahobbit.treeset import SetNode
@@ -64,7 +65,7 @@ class PersistentTreeMap(object):
         return self.root == other.root
     
     def __neq__(self, other):
-        return self.root == other.root
+        return self.root != other.root
     
     def assoc(self, key, value):
         """ Return copy of self with an association between key and value.
@@ -96,6 +97,22 @@ class PersistentTreeMap(object):
         for node in self.root:
             yield node.value
     
+    if version_info >= (3,):
+        keys = iterkeys
+        items = iteritems
+        values = itervalues
+    else:
+        keys = lambda self: list(self)
+        items = lambda self: list(self.iteritems())
+        values = lambda self: list(self.itervalues())
+    
+    @staticmethod
+    def from_itr(itr):
+        mp = TransientTreeMap()
+        for key, value in itr:
+            mp = mp.assoc(key, value)
+        return mp.persistent()        
+    
     @staticmethod
     def from_dict(dct):
         """ Create PersistentTreeMap from existing dictionary. """
@@ -121,7 +138,16 @@ class PersistentTreeMap(object):
         if argument is SENTINEL:
             return PersistentTreeMap()
         
-        return PersistentTreeMap.from_dict(argument)
+        if isinstance(argument, dict):
+            return PersistentTreeMap.from_dict(argument)
+        
+        if isinstance(argument, TransientTreeMap):
+            return PersistentTreeMap(copy(argument.root))
+        
+        if isinstance(argument, PersistentTreeMap):
+            return argument
+                
+        return PersistentTreeMap.from_itr(argument)
 
 
 class TransientTreeMap(PersistentTreeMap):
