@@ -88,7 +88,7 @@ typedef struct {
 
 
 dispatch_node* new_dispatch(void* members[]);
-collision_node* new_collision(int nmembers, set_node* members);
+collision_node* new_collision(int nmembers, set_node** members);
 assoc_node* new_assoc(unsigned int hsh, key* k, void* v);
 
 dispatch_node* dispatch_two(
@@ -109,7 +109,7 @@ void* dispatch_assoc(void* this, hashtype hsh, int shf, key* k, void* n) {
     hashtype rel = relevant(hsh, shf);
     
     dispatch_node* self = (dispatch_node*) this;
-    void* newmembers[BRANCH];
+    node** newmembers = calloc(BRANCH, sizeof(node*));
     
     if (self->members[rel]) {
         newmembers[rel] = (void*) ((node_cls*) self->members[rel])->assoc(
@@ -119,7 +119,9 @@ void* dispatch_assoc(void* this, hashtype hsh, int shf, key* k, void* n) {
         newmembers[rel] = n;
     }
     
-    return new_dispatch(newmembers);
+    void* r = new_dispatch(newmembers);
+    free(newmembers);
+    return r;
 }
 
 void* dispatch_without(void* this, hashtype hsh, int shf, key* k) {
@@ -157,7 +159,9 @@ void dispatch_deref(void* this) {
     
     unsigned int i;
     for (i=0; i < BRANCH; ++i) {
-        ((node_cls*) self->members[i])->deref(self->members[i]);
+        if (self->members[i] != NULL) {
+            decref(self->members[i]);
+        }
     }
     
     free(self);
@@ -227,7 +231,9 @@ void collision_deref(void* this) {
     
     unsigned int i;
     for (i=0; i < self->nmembers; ++i) {
-        ((node_cls* ) self->members[i])->deref(self->members[i]);
+        if (self->members[i] != NULL) {
+            decref(self->members[i]);
+        }
     }
     
     free(self);
@@ -327,18 +333,18 @@ dispatch_node* dispatch_two(
     return nd;
 }
 
-collision_node* new_collision(int nmembers, set_node* members) {
+collision_node* new_collision(int nmembers, set_node** members) {
     unsigned int i;
     
     for (i = 0; i < nmembers; ++i) {
-        incref(members + i);
+        incref(members[i]);
     }
     collision_node* updated = calloc(1, sizeof(collision_node));
     updated->cls = &collision;
     updated->refs = 1;
     updated->nmembers = nmembers;
     updated->members = members;
-    updated->hsh = members->hsh;
+    updated->hsh = members[0]->hsh;
     return updated;
 }
 
@@ -403,6 +409,7 @@ int main(char** argv, size_t argc) {
     assert(!k->cmp(k, k3));
     assert(!k->cmp(k2, k3));
     assoc_node* a = new_assoc(hash_ckey(k), k, "World");
+    incref(a); /* We are holding a ref outside of a map. */
     node* m = nullnode.cls->assoc(&nullnode, a->hsh, 0, a->k, a);
     assoc_node* b = m->cls->get(m, a->hsh, 0, a->k);
     printf("%s ", b->k->value);
@@ -411,6 +418,8 @@ int main(char** argv, size_t argc) {
     assert(m->cls->get(m, hash_ckey(k2), 0, k2) == a);
     assert(m == a);
     assoc_node* a2 = new_assoc(hash_ckey(k3), k3, "Eggs");
+    incref(a2); /* We are holding a ref outside of a map. */
     node* m2 = m->cls->assoc(m, a2->hsh, 0, a2->k, a2);
+    incref(a2);
     return 0;
 }
