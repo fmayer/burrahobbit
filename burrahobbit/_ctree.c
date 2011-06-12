@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #include <stdlib.h>
 #include <math.h>
+#include <assert.h>
 
 #define SHIFT 5
 #define BMAP ((1 << SHIFT) - 1)
@@ -31,24 +32,26 @@ THE SOFTWARE.
 /* This is currently not used as it is only C99. Kept here for reference */
 #define call(obj, fun, ...) ((node_cls*) obj->cls)->fun(obj, __VA_ARGS__)
 
+typedef struct _node node;
+typedef struct _key key;	
 typedef int hashtype;
 
-typedef struct {
-    unsigned char (*cmp)(void*, void*);
+struct _key {
+    unsigned char (*cmp)(key*, key*);
     void* value;
-} key;
+};
 
 typedef struct {
-    void* (*assoc)(void*, hashtype, int, key*, void*);
-    void* (*without)(void*, hashtype, int, key*);
-    void* (*get)(void*, hashtype, int, key*);
-    void (*deref)(void*);
+    void* (*assoc)(node*, hashtype, int, key*, node*);
+    void* (*without)(node*, hashtype, int, key*);
+    void* (*get)(node*, hashtype, int, key*);
+    void (*deref)(node*);
 } node_cls;
 
-typedef struct {
+struct _node {
     node_cls* cls;
     unsigned int refs;
-} node;
+};
 
 typedef struct {
     node_cls* cls;
@@ -82,6 +85,7 @@ typedef struct {
     key* k;
     void* v;
 } assoc_node;
+
 
 dispatch_node* new_dispatch(void* members[]);
 collision_node* new_collision(int nmembers, set_node* members);
@@ -264,7 +268,11 @@ void* assoc_without(void* this, hashtype hsh, int shf, key* k) {
 }
 
 void* assoc_get(void* this, hashtype hsh, int shf, key* k) {
-    return this;
+    assoc_node* self = (assoc_node*) this;
+    if (self->hsh == hsh && self->k->cmp(self->k, k)) {
+        return this;
+    }
+    return NULL;
 }
 
 void* assoc_deref(void* this) {
@@ -346,11 +354,14 @@ assoc_node* new_assoc(unsigned int hsh, key* k, void* v) {
 
 typedef struct {
     unsigned char (*cmp)(void*, void*);
-    void* value;
+    char* value;
     size_t length;
 } ckey;
 
 unsigned char cmp_ckey(void* vone, void* vother) {
+    if (vone == vother) {
+        return 1;
+    }
     ckey* one = (ckey*) vone;
     ckey* other = (ckey*) vother;
     if (one->length != other->length) {
@@ -358,6 +369,19 @@ unsigned char cmp_ckey(void* vone, void* vother) {
     }
     
     return !memcmp(one->value, other->value, one->length);
+}
+
+unsigned long ocaml_hash(unsigned char *str, unsigned int len) {
+    unsigned long hash = 0;
+    unsigned int i;
+    for (i=0; i<len; i++) {
+        hash = hash*19 + str[i];
+    }
+    return hash;
+}
+
+unsigned int hash_ckey(ckey* key) {
+    return ocaml_hash(key->value, key->length);
 }
 
 ckey* new_ckey(char* data, size_t n) {
@@ -369,5 +393,18 @@ ckey* new_ckey(char* data, size_t n) {
 }
 
 int main(char** argv, size_t argc) {
+    key* k = new_ckey("Hello", 6);
+    key* k2 = new_ckey("Hello", 6);
+    key* k3 = new_ckey("World", 6);
+    assert(k->cmp(k, k));
+    assert(k->cmp(k, k2));
+    assert(!k->cmp(k, k3));
+    assert(!k->cmp(k2, k3));
+    assoc_node* a = new_assoc(hash_ckey(k), k, "World");
+    node* m = nullnode.cls->assoc(&nullnode, a->hsh, 0, a->k, a);
+    assoc_node* b = m->cls->get(m, a->hsh, 0, a->k);
+    printf("%s ", b->k->value);
+    printf("%s!\n", b->v);
+    assert(m->cls->get(m, hash_ckey(k3), 0, k3) == NULL);
     return 0;
 }
