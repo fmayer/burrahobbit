@@ -42,9 +42,9 @@ struct _key {
 };
 
 typedef struct {
-    void* (*assoc)(node*, hashtype, int, key*, node*);
-    void* (*without)(node*, hashtype, int, key*);
-    void* (*get)(node*, hashtype, int, key*);
+    node* (*assoc)(node*, hashtype, int, key*, node*);
+    node* (*without)(node*, hashtype, int, key*);
+    node* (*get)(node*, hashtype, int, key*);
     void (*deref)(node*);
 } node_cls;
 
@@ -55,14 +55,14 @@ struct _node {
 
 typedef struct {
     node_cls* cls;
-    int refs;
+    unsigned int refs;
     
     void* members[BRANCH];
 } dispatch_node;
 
 typedef struct {
     node_cls* cls;
-    int refs;
+    unsigned int refs;
     
     unsigned int hsh;
     key* k;
@@ -70,7 +70,7 @@ typedef struct {
 
 typedef struct {
     node_cls* cls;
-    int refs;
+    unsigned int refs;
     
     unsigned int hsh;
     int nmembers;
@@ -79,7 +79,7 @@ typedef struct {
 
 typedef struct {
     node_cls* cls;
-    int refs;
+    unsigned int refs;
     
     unsigned int hsh;
     key* k;
@@ -293,7 +293,9 @@ dispatch_node* new_dispatch(void* members[]) {
     updated->refs = 1;
     int i;
     for (i = 0; i < BRANCH; ++i) {
-        incref(members[i]);
+        if (members[i] != NULL) {
+            incref(members[i]);
+        }
         updated->members[i] = members[i];
     }
     
@@ -406,5 +408,9 @@ int main(char** argv, size_t argc) {
     printf("%s ", b->k->value);
     printf("%s!\n", b->v);
     assert(m->cls->get(m, hash_ckey(k3), 0, k3) == NULL);
+    assert(m->cls->get(m, hash_ckey(k2), 0, k2) == a);
+    assert(m == a);
+    assoc_node* a2 = new_assoc(hash_ckey(k3), k3, "Eggs");
+    node* m2 = m->cls->assoc(m, a2->hsh, 0, a2->k, a2);
     return 0;
 }
