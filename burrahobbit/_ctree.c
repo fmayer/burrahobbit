@@ -29,23 +29,19 @@ THE SOFTWARE.
 #define BRANCH 32
 
 #define relevant(hsh, shift) (hsh >> shift & BMAP)
-/* This is currently not used as it is only C99. Kept here for reference */
-#define call(obj, fun, ...) ((node_cls*) obj->cls)->fun(obj, __VA_ARGS__)
+
+#define raise(errno) return errno
+#define ret(value) *ret = value; return 0;
 
 typedef struct _node node;
-typedef struct _key key;	
-typedef int hashtype;
-
-struct _key {
-    unsigned char (*cmp)(key*, key*);
-    void* value;
-};
+typedef unsigned int hashtype;
 
 typedef struct {
-    node* (*assoc)(node*, hashtype, int, key*, node*);
-    node* (*without)(node*, hashtype, int, key*);
-    node* (*get)(node*, hashtype, int, key*);
+    node* (*assoc)(node*, hashtype, int, node*);
+    node* (*without)(node*, hashtype, int, void*);
+    node* (*get)(node*, hashtype, int, void*);
     void (*deref)(node*);
+    unsigned char (*cmp)(void*, void*);
 } node_cls;
 
 struct _node {
@@ -57,22 +53,22 @@ typedef struct {
     node_cls* cls;
     unsigned int refs;
     
-    void* members[BRANCH];
+    node* members[BRANCH];
 } dispatch_node;
 
 typedef struct {
     node_cls* cls;
     unsigned int refs;
     
-    unsigned int hsh;
-    key* k;
+    hashtype hsh;
+    void* k;
 } set_node;
 
 typedef struct {
     node_cls* cls;
     unsigned int refs;
     
-    unsigned int hsh;
+    hashtype hsh;
     int nmembers;
     set_node** members;
 } collision_node;
@@ -81,15 +77,14 @@ typedef struct {
     node_cls* cls;
     unsigned int refs;
     
-    unsigned int hsh;
-    key* k;
+    hashtype hsh;
+    void* k;
     void* v;
 } assoc_node;
 
 
-dispatch_node* new_dispatch(void* members[]);
+dispatch_node* new_dispatch(node* members[]);
 collision_node* new_collision(int nmembers, set_node** members);
-assoc_node* new_assoc(unsigned int hsh, key* k, void* v);
 
 dispatch_node* dispatch_two(
     int shf, set_node* one, set_node* other
@@ -105,30 +100,30 @@ void decref(node* x) {
     }
 }
 
-void* dispatch_assoc(void* this, hashtype hsh, int shf, key* k, void* n) {
+node* dispatch_assoc(node* this, hashtype hsh, int shf, set_node* n) {
     hashtype rel = relevant(hsh, shf);
     
     dispatch_node* self = (dispatch_node*) this;
     node** newmembers = calloc(BRANCH, sizeof(node*));
     
     if (self->members[rel]) {
-        newmembers[rel] = (void*) ((node_cls*) self->members[rel])->assoc(
-            newmembers[rel], hsh, shf + SHIFT, k, n
+        newmembers[rel] = (node*) ((node_cls*) self->members[rel])->assoc(
+            newmembers[rel], hsh, shf + SHIFT, n
         );
     } else {
         newmembers[rel] = n;
     }
     
-    void* r = new_dispatch(newmembers);
+    node* r = new_dispatch(newmembers);
     free(newmembers);
     return r;
 }
 
-void* dispatch_without(void* this, hashtype hsh, int shf, key* k) {
+node* dispatch_without(node* this, hashtype hsh, int shf, void* k) {
     hashtype rel = relevant(hsh, shf);
     
     dispatch_node* self = (dispatch_node*) this;
-    void* newmembers[BRANCH];
+    node* newmembers[BRANCH];
     
     if (!self->members[rel]) {
         return this;
@@ -140,11 +135,11 @@ void* dispatch_without(void* this, hashtype hsh, int shf, key* k) {
     return new_dispatch(newmembers);
 }
 
-void* dispatch_get(void* this, hashtype hsh, int shf, key* k) {
+node* dispatch_get(node* this, hashtype hsh, int shf, void* k) {
     hashtype rel = relevant(hsh, shf);
     
     dispatch_node* self = (dispatch_node*) this;
-    void* newmembers[BRANCH];
+    node* newmembers[BRANCH];
     
     if (!self->members[rel]) {
         return NULL;
@@ -154,7 +149,7 @@ void* dispatch_get(void* this, hashtype hsh, int shf, key* k) {
     );
 }
 
-void dispatch_deref(void* this) {
+void dispatch_deref(node* this) {
     dispatch_node* self = (dispatch_node*) this;
     
     unsigned int i;
@@ -167,13 +162,13 @@ void dispatch_deref(void* this) {
     free(self);
 }
 
-void* collision_assoc(void* this, hashtype hsh, int shf, key* k, set_node* n) {
+node* collision_assoc(node* this, hashtype hsh, int shf, set_node* n) {
     collision_node* self = (collision_node*) this;
     set_node** newmembers;
     
     int i;
     for (i = 0; i < self->nmembers; ++i) {
-        if (k->cmp(k, self->members[i]->k)) {
+        if (n->cls->cmp(n->k, self->members[i]->k)) {
             newmembers = calloc(self->nmembers, sizeof(void));
             memcpy(self->members, newmembers, self->nmembers);
             newmembers[i] = n;
@@ -187,14 +182,14 @@ void* collision_assoc(void* this, hashtype hsh, int shf, key* k, set_node* n) {
     return new_collision(self->nmembers + 1, newmembers);
 }
 
-void* collision_without(void* this, hashtype hsh, int shf, key* k) {
+node* collision_without(node* this, hashtype hsh, int shf, void* k) {
     collision_node* self = (collision_node*) this;
     
     set_node** newmembers;
     
     int i, j;
     for (i = 0; i < self->nmembers; ++i) {
-        if (k->cmp(k, self->members[i]->k)) {
+        if (self->members[i]->cls->cmp(self->members[i]->k, k)) {
             if (!(self->nmembers - 1)) {
                 return NULL;
             }
@@ -212,13 +207,13 @@ void* collision_without(void* this, hashtype hsh, int shf, key* k) {
     return self;
 }
 
-void* collision_get(void* this, hashtype hsh, int shf, key* k) {
+node* collision_get(node* this, hashtype hsh, int shf, void* k) {
     collision_node* self = (collision_node*) this;
     set_node** newmembers;
     
     int i;
     for (i = 0; i < self->nmembers; ++i) {
-        if (k->cmp(k, self->members[i]->k)) {
+        if (self->members[i]->cls->cmp(self->members[i]->k, k)) {
             return self->members[i];
         }
     }
@@ -226,7 +221,7 @@ void* collision_get(void* this, hashtype hsh, int shf, key* k) {
     return NULL;
 }
 
-void collision_deref(void* this) {
+void collision_deref(node* this) {
     collision_node* self = (collision_node*) this;
     
     unsigned int i;
@@ -240,60 +235,57 @@ void collision_deref(void* this) {
 }
 
 
-void* null_assoc(void* this, hashtype hsh, int shf, key* k, set_node* n) {
+node* null_assoc(node* this, hashtype hsh, int shf, set_node* n) {
     return n;
 }
 
-void* null_without(void* this, hashtype hsh, int shf, key* k) {
+node* null_without(node* this, hashtype hsh, int shf, void* k) {
     return this;
 }
 
-void* null_get(void* this, hashtype hsh, int shf, key* k) {
+node* null_get(node* this, hashtype hsh, int shf, void* k) {
     return NULL;
 }
 
-void* null_deref(void* this) {
+void null_deref(node* this) {
 }
 
-void* assoc_assoc(void* this, hashtype hsh, int shf, key* k, set_node* n) {
+node* assoc_assoc(node* this, hashtype hsh, int shf, set_node* n) {
     assoc_node* self = (assoc_node*) this;
-    if (self->hsh == hsh && self->k->cmp(self->k, k)) {
+    if (self->hsh == hsh && self->cls->cmp(self->k, n->k)) {
         return n;
     } else {
         return dispatch_two(shf, ((set_node*) this), n);
     }
 }
 
-void* assoc_without(void* this, hashtype hsh, int shf, key* k) {
+node* assoc_without(node* this, hashtype hsh, int shf, void* k) {
     assoc_node* self = (assoc_node*) this;
-    if (self->hsh == hsh && self->k->cmp(self->k, k)) {
+    if (self->hsh == hsh && self->cls->cmp(self->k, k)) {
         return NULL;
     } else {
         return this;
     }
 }
 
-void* assoc_get(void* this, hashtype hsh, int shf, key* k) {
+node* assoc_get(node* this, hashtype hsh, int shf, void* k) {
     assoc_node* self = (assoc_node*) this;
-    if (self->hsh == hsh && self->k->cmp(self->k, k)) {
+    if (self->hsh == hsh && self->cls->cmp(self->k, k)) {
         return this;
     }
     return NULL;
 }
 
-void* assoc_deref(void* this) {
-}
 
 const node_cls dispatch =
-    { dispatch_assoc, dispatch_without, dispatch_get, dispatch_deref };
+    { dispatch_assoc, dispatch_without, dispatch_get, dispatch_deref, NULL };
 const node_cls collision =
-    { collision_assoc, collision_without, collision_get, collision_deref };
-const node_cls assoc = { assoc_assoc, assoc_without, assoc_get, assoc_deref };
-const node_cls null = { null_assoc, null_without, null_get, null_deref };
+    { collision_assoc, collision_without, collision_get, collision_deref, NULL };
+const node_cls null = { null_assoc, null_without, null_get, null_deref, NULL };
 
 const node nullnode = { &null, 1 };
 
-dispatch_node* new_dispatch(void* members[]) {
+dispatch_node* new_dispatch(node* members[]) {
     dispatch_node* updated = calloc(1, sizeof(dispatch_node));
     updated->cls = &dispatch;
     updated->refs = 1;
@@ -326,9 +318,9 @@ dispatch_node* dispatch_two(
     dispatch_node* nd = empty_dispatch();
     dispatch_node* nnd;
     
-    nnd = dispatch_assoc(nd, one->hsh, shf, one->k, one);
+    nnd = dispatch_assoc(nd, one->hsh, shf, one);
     decref(nd);
-    nd = dispatch_assoc(nnd, other->hsh, shf, other->k, other);
+    nd = dispatch_assoc(nnd, other->hsh, shf, other);
     decref(nnd);
     return nd;
 }
@@ -348,9 +340,41 @@ collision_node* new_collision(int nmembers, set_node** members) {
     return updated;
 }
 
-assoc_node* new_assoc(unsigned int hsh, key* k, void* v) {
-    assoc_node* updated = calloc(1, sizeof(assoc_node));
-    updated->cls = &assoc;
+#include <Python.h>
+
+static PyObject* make_Node(node* root);
+
+typedef struct {
+    node_cls* cls;
+    unsigned int refs;
+    
+    hashtype hsh;
+    PyObject* k;
+    PyObject* v;
+} pyassoc_node;
+
+unsigned char pyassoc_cmp(void* vone, void* vother) {
+    return PyObject_RichCompareBool(
+        (PyObject*) vone,
+        (PyObject*) vother, Py_EQ
+    );
+}
+
+void pyassoc_deref(node* this) {
+    pyassoc_node* self = (pyassoc_node*) self;
+    Py_DECREF(self->k);
+    Py_DECREF(self->v);
+}
+
+const node_cls pyassoc = { assoc_assoc, assoc_without, assoc_get, pyassoc_deref, pyassoc_cmp };
+
+pyassoc_node* new_pyassoc(hashtype hsh, PyObject* k, PyObject* v) {
+    pyassoc_node* updated = calloc(1, sizeof(pyassoc_node));
+    if (updated == NULL)
+        return NULL
+    Py_INCREF(k);
+    Py_INCREF(v);
+    updated->cls = &pyassoc;
     updated->refs = 1;
     updated->k = k;
     updated->v = v;
@@ -358,92 +382,6 @@ assoc_node* new_assoc(unsigned int hsh, key* k, void* v) {
     return updated;
 }
 
-/* For testing purposes only. */
-
-typedef struct {
-    unsigned char (*cmp)(void*, void*);
-    char* value;
-    size_t length;
-} ckey;
-
-unsigned char cmp_ckey(void* vone, void* vother) {
-    if (vone == vother) {
-        return 1;
-    }
-    ckey* one = (ckey*) vone;
-    ckey* other = (ckey*) vother;
-    if (one->length != other->length) {
-        return 0;
-    }
-    
-    return !memcmp(one->value, other->value, one->length);
-}
-
-unsigned long ocaml_hash(unsigned char *str, unsigned int len) {
-    unsigned long hash = 0;
-    unsigned int i;
-    for (i=0; i<len; i++) {
-        hash = hash*19 + str[i];
-    }
-    return hash;
-}
-
-unsigned int hash_ckey(ckey* key) {
-    return ocaml_hash(key->value, key->length);
-}
-
-ckey* new_ckey(char* data, size_t n) {
-    ckey* new = malloc(sizeof(ckey));
-    new->cmp = cmp_ckey;
-    new->value = data;
-    new->length = n;
-    return new;
-}
-
-int main(char** argv, size_t argc) {
-    key* k = new_ckey("Hello", 6);
-    key* k2 = new_ckey("Hello", 6);
-    key* k3 = new_ckey("World", 6);
-    assert(k->cmp(k, k));
-    assert(k->cmp(k, k2));
-    assert(!k->cmp(k, k3));
-    assert(!k->cmp(k2, k3));
-    assoc_node* a = new_assoc(hash_ckey(k), k, "World");
-    incref(a); /* We are holding a ref outside of a map. */
-    node* m = nullnode.cls->assoc(&nullnode, a->hsh, 0, a->k, a);
-    assoc_node* b = m->cls->get(m, a->hsh, 0, a->k);
-    printf("%s ", b->k->value);
-    printf("%s!\n", b->v);
-    assert(m->cls->get(m, hash_ckey(k3), 0, k3) == NULL);
-    assert(m->cls->get(m, hash_ckey(k2), 0, k2) == a);
-    assert(m == a);
-    assoc_node* a2 = new_assoc(hash_ckey(k3), k3, "Eggs");
-    incref(a2); /* We are holding a ref outside of a map. */
-    node* m2 = m->cls->assoc(m, a2->hsh, 0, a2->k, a2);
-    incref(a2);
-    return 0;
-}
-
-#include <Python.h>
-
-typedef struct {
-    unsigned char (*cmp)(void*, void*);
-    PyObject* value;
-} pykey;
-
-unsigned char cmp_pykey(void* vone, void* vother) {
-    return PyObject_RichCompareBool(
-        (PyObject*) ((pykey*) vone)->value,
-        (PyObject*) ((pykey*) vone)->value, PY_EQ
-    );
-}
-
-ckey* new_pykey(PyObject* data) {
-    pykey* new = malloc(sizeof(pykey));
-    new->cmp = cmp_pykey;
-    new->value = data;
-    return new;
-}
 
 typedef struct {
     PyObject_HEAD
@@ -460,35 +398,8 @@ Node_dealloc(_ctree_NodeObject* self)
 
 static PyObject*
 Node_assoc(_ctree_NodeObject* self, PyObject *args, PyObject *kwds) {
-    unsigned int hsh, shift;
-    _ctree_NodeObject* other;
-
-    static char *kwlist[] = {"hsh", "shift", "node", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(
-        args, kwds, "|iiO", kwlist, &hsh, &shift, node))
-        return -1; 
-    return make_Node(
-        self->root->cls->assoc(self->root, hsh, shift, other->root));
-}
-
-static PyObject*
-Node_get(_ctree_NodeObject* self, PyObject *args, PyObject *kwds) {
-    unsigned int hsh, shift;
-    PyObject* key;
-
-    static char *kwlist[] = {"hsh", "shift", "key", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(
-        args, kwds, "|iiO", kwlist, &hsh, &shift, key))
-        return -1; 
-    return make_Node(
-        self->root->cls->get(self->root, hsh, shift, other->root));
-}
-
-static PyObject*
-Node_assoc(_ctree_NodeObject* self, PyObject *args, PyObject *kwds) {
-    unsigned int hsh, shift;
+    hashtype hsh;
+    unsigned int shift;
     _ctree_NodeObject* node;
 
     static char *kwlist[] = {"hsh", "shift", "node", NULL};
@@ -497,7 +408,23 @@ Node_assoc(_ctree_NodeObject* self, PyObject *args, PyObject *kwds) {
         args, kwds, "|iiO", kwlist, &hsh, &shift, &node))
         return -1; 
     return make_Node(
-        self->root->cls->assoc(self->root, hsh, shift, other->root));
+        self->root->cls->assoc(self->root, hsh, shift, node->root)
+    );
+}
+
+static PyObject*
+Node_get(_ctree_NodeObject* self, PyObject *args, PyObject *kwds) {
+    hashtype hsh;
+    unsigned int shift;
+    PyObject key;
+
+    static char *kwlist[] = {"hsh", "shift", "key", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(
+        args, kwds, "|iiO", kwlist, &hsh, &shift, &key))
+        return -1; 
+    return make_Node(
+        (node*) self->root->cls->get(self->root, hsh, shift, &key));
 }
     
 
