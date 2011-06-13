@@ -30,9 +30,6 @@ THE SOFTWARE.
 
 #define relevant(hsh, shift) (hsh >> shift & BMAP)
 
-#define raise(errno) return errno
-#define ret(value) *ret = value; return 0;
-
 typedef struct _node node;
 typedef unsigned int hashtype;
 
@@ -85,6 +82,7 @@ typedef struct {
 
 dispatch_node* new_dispatch(node* members[]);
 collision_node* new_collision(int nmembers, set_node** members);
+dispatch_node* copy_dispatch(dispatch_node* node);
 
 dispatch_node* dispatch_two(
     int shf, set_node* one, set_node* other
@@ -104,48 +102,46 @@ node* dispatch_assoc(node* this, hashtype hsh, int shf, set_node* n) {
     hashtype rel = relevant(hsh, shf);
     
     dispatch_node* self = (dispatch_node*) this;
-    node** newmembers = calloc(BRANCH, sizeof(node*));
+    dispatch_node* nd = copy_dispatch(self);
     
-    if (self->members[rel]) {
-        newmembers[rel] = (node*) ((node_cls*) self->members[rel])->assoc(
-            newmembers[rel], hsh, shf + SHIFT, n
+    if (nd->members[rel]) {
+        nd->members[rel] = nd->members[rel]->cls->assoc(
+            nd->members[rel], hsh, shf + SHIFT, n
         );
     } else {
-        newmembers[rel] = n;
+        nd->members[rel] = n;
     }
-    
-    node* r = new_dispatch(newmembers);
-    free(newmembers);
-    return r;
+    return nd;
 }
 
 node* dispatch_without(node* this, hashtype hsh, int shf, void* k) {
     hashtype rel = relevant(hsh, shf);
     
     dispatch_node* self = (dispatch_node*) this;
-    node* newmembers[BRANCH];
-    
-    if (!self->members[rel]) {
-        return this;
-    }
-    newmembers[rel] = ((node_cls*) self->members[rel])->without(
-        newmembers[rel], hsh, shf + SHIFT, k
+    dispatch_node* n = copy_dispatch(self);
+    n->members[rel] = n->members[rel]->cls->without(
+        n->members[rel], hsh, shf + SHIFT, k
     );
     
-    return new_dispatch(newmembers);
+    unsigned int i;
+    for (i=0; i < BRANCH; ++i) {
+        if (n->members[i] != NULL) {
+            return n;
+        }
+    }
+    free(n);
+    return NULL;
 }
 
 node* dispatch_get(node* this, hashtype hsh, int shf, void* k) {
-    hashtype rel = relevant(hsh, shf);
-    
+    hashtype rel = relevant(hsh, shf);    
     dispatch_node* self = (dispatch_node*) this;
-    node* newmembers[BRANCH];
-    
+
     if (!self->members[rel]) {
         return NULL;
     }
-    return ((node_cls*) self->members[rel])->get(
-        newmembers[rel], hsh, shf + SHIFT, k
+    return self->members[rel]->cls->get(
+        self->members[rel], hsh, shf + SHIFT, k
     );
 }
 
@@ -304,12 +300,17 @@ dispatch_node* empty_dispatch() {
     dispatch_node* updated = calloc(1, sizeof(dispatch_node));
     updated->cls = &dispatch;
     updated->refs = 1;
-    int i;
-    for (i = 0; i < BRANCH; ++i) {
-        updated->members[i] = NULL;
-    }
-    
     return updated;
+}
+
+dispatch_node* copy_dispatch(dispatch_node* node) {
+    dispatch_node* n = empty_dispatch();
+    
+    unsigned int i;
+    for (i=0; i < BRANCH; ++i) {
+        n->members[i] = node->members[i];
+    }
+    return n;
 }
 
 dispatch_node* dispatch_two(
@@ -371,7 +372,7 @@ const node_cls pyassoc = { assoc_assoc, assoc_without, assoc_get, pyassoc_deref,
 pyassoc_node* new_pyassoc(hashtype hsh, PyObject* k, PyObject* v) {
     pyassoc_node* updated = calloc(1, sizeof(pyassoc_node));
     if (updated == NULL)
-        return NULL
+        return NULL;
     Py_INCREF(k);
     Py_INCREF(v);
     updated->cls = &pyassoc;
