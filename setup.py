@@ -25,10 +25,10 @@ import sys
 
 try:
     # If we got setuptools, use it so we get the nice develop cmd.
-    from setuptools import setup
+    from setuptools import setup, Extension
 except:
     # Doesn't matter if we don't have it though.
-    from distutils.core import setup
+    from distutils.core import setup, Extension
 
 
 VERSION = '0.1.1'
@@ -48,5 +48,6 @@ setup(
     license='MIT',
     zip_safe=True,
     packages=['burrahobbit', 'burrahobbit.test'],
+    ext_modules=[Extension('burrahobbit._ctree', ['burrahobbit/_ctree.c'])],
     **extra
 )
