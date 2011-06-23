@@ -23,12 +23,7 @@ THE SOFTWARE.
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
-
-#define SHIFT 5
-#define BMAP ((1 << SHIFT) - 1)
-#define BRANCH 32
-
-#define relevant(hsh, shift) (hsh >> shift & BMAP)
+#include <_ctree.h>
 
 typedef struct _node node;
 typedef unsigned int hashtype;
@@ -283,6 +278,8 @@ const node nullnode = { &null, 1 };
 
 dispatch_node* new_dispatch(node* members[]) {
     dispatch_node* updated = calloc(1, sizeof(dispatch_node));
+    if (updated == NULL)
+        return NULL;
     updated->cls = &dispatch;
     updated->refs = 1;
     int i;
@@ -333,11 +330,13 @@ collision_node* new_collision(int nmembers, set_node** members) {
         incref(members[i]);
     }
     collision_node* updated = calloc(1, sizeof(collision_node));
-    updated->cls = &collision;
-    updated->refs = 1;
-    updated->nmembers = nmembers;
-    updated->members = members;
-    updated->hsh = members[0]->hsh;
+    if (updated != NULL) {
+        updated->cls = &collision;
+	updated->refs = 1;
+	updated->nmembers = nmembers;
+	updated->members = members;
+	updated->hsh = members[0]->hsh;
+    }
     return updated;
 }
 
@@ -367,7 +366,8 @@ void pyassoc_deref(node* this) {
     Py_DECREF(self->v);
 }
 
-const node_cls pyassoc = { assoc_assoc, assoc_without, assoc_get, pyassoc_deref, pyassoc_cmp };
+const node_cls pyassoc =
+    { assoc_assoc, assoc_without, assoc_get, pyassoc_deref, pyassoc_cmp };
 
 pyassoc_node* new_pyassoc(hashtype hsh, PyObject* k, PyObject* v) {
     pyassoc_node* updated = calloc(1, sizeof(pyassoc_node));
@@ -427,9 +427,14 @@ Node_get(_ctree_NodeObject* self, PyObject *args, PyObject *kwds) {
     return make_Node(
         (node*) self->root->cls->get(self->root, hsh, shift, &key));
 }
-    
 
 static PyMethodDef Node_methods[] = {
+    {"assoc", (PyCFunction)Node_assoc, METH_KEYWORDS,
+     "e"
+    },
+    {"get", (PyCFunction)Node_get, METH_KEYWORDS,
+     "e"
+    },
     {NULL}  /* Sentinel */
 };
 
@@ -475,7 +480,23 @@ static PyTypeObject _ctree_NodeType = {
     0,                 /* tp_new */
 };
 
+static PyObject*
+AssocNode(_ctree_NodeObject* self, PyObject *args, PyObject *kwds) {
+    PyObject* key = malloc(sizeof(PyObject));
+    PyObject* value = malloc(sizeof(PyObject));
+
+    static char *kwlist[] = {"key", "value", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, key, value))
+        return NULL;
+    return make_Node(new_pyassoc(PyObject_Hash(key), key, value));
+}
+
+
+
 static PyMethodDef _ctree_methods[] = {
+    {"AssocNode", (PyCFunction)AssocNode, METH_KEYWORDS,
+     "e"
+    },
     {NULL}  /* Sentinel */
 };
 
