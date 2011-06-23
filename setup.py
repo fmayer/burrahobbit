@@ -48,6 +48,9 @@ setup(
     license='MIT',
     zip_safe=True,
     packages=['burrahobbit', 'burrahobbit.test'],
-    ext_modules=[Extension('burrahobbit._ctree', ['burrahobbit/_ctree.c'])],
+    ext_modules=[Extension(
+        'burrahobbit._ctree',
+        ['burrahobbit/_ctree.c', 'burrahobbit/_ctreemodule.c']
+    )],
     **extra
 )
