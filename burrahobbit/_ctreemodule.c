@@ -162,7 +162,7 @@ static PyMethodDef _ctree_methods[] = {
 static PyObject *
 make_Node(node* root) {
     _ctree_NodeObject* self =
-        (_ctree_NodeObject *)(_ctree_NodeType.tp_alloc(&_ctree_NodeType, 0));
+        PyObject_New(_ctree_NodeObject, &_ctree_NodeType);
     if (self != NULL) {
         self->root = root;
     }
